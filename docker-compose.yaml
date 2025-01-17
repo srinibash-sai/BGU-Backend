@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=bgu
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+    ports:
+      - 3360:3306
+  redis:
+    image: redis:latest
+    environment:
+      - REDIS_PASSWORD=pass
+    ports:
+      - 6379:6379
