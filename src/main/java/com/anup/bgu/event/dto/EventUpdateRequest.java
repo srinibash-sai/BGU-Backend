@@ -1,7 +1,6 @@
 package com.anup.bgu.event.dto;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -28,7 +27,7 @@ public record EventUpdateRequest(
         String coordinatorNumber,
 
         @Min(value = 0, message = "Minimum amount should be 0")
-        int amount,
+        Integer amount,
 
         @Pattern(regexp = "^(SOLO|TEAM)$", message = "Please provide valid teamType")
         String teamType,

@@ -1,6 +1,7 @@
 package com.anup.bgu.exceptions.handler;
 
 import com.anup.bgu.exceptions.dto.ErrorResponse;
+import com.anup.bgu.exceptions.models.EventNotFoundException;
 import com.anup.bgu.exceptions.models.InvalidImageException;
 import com.anup.bgu.exceptions.models.InvalidRequestException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(EventNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCustomException(EventNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(HttpStatus.NOT_FOUND.toString(), ex.getMessage()));
     }
 
 }

@@ -52,24 +52,6 @@ public class ImageServiceImpl implements ImageService {
         }
     }
 
-
-
-//    @GetMapping("{id}/picture")
-//    public ResponseEntity<byte[]> getPicture(
-//            @PathVariable("id") @NotEmpty String id) {
-//
-//        String imagePath = imageServiceImpl.getEventImagePath(id);  // Method to get the image path by EventId
-//
-//        try {
-//            byte[] imageBytes = imageServiceImpl.getImageAsByteArray(imagePath); // Get the image as byte array
-//            return ResponseEntity.ok()
-//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image.png\"")
-//                    .body(imageBytes);  // Return the image byte array
-//        } catch (IOException e) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//        }
-//    }
-
     @Async
     private void saveFile(byte[] file, String targetPath) {
         int RETRY_THRESHOLD = 3;
