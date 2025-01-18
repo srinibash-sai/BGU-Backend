@@ -6,7 +6,9 @@ import com.anup.bgu.event.entities.Event;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,17 +20,27 @@ public class CaptchaController {
 
     private final CaptchaService captchaService;
 
+    @Value("${secret.captcha-expiry}")
+    private int CAPTCHA_EXPIRY;
+
     @GetMapping(value = "/getCaptcha", produces = MediaType.IMAGE_PNG_VALUE)
-    public byte[] getCaptcha(HttpServletResponse response) {
+    public ResponseEntity<byte[]> getCaptcha(HttpServletResponse response) {
         CaptchaResponse captchaResponse = captchaService.getCaptcha();
+
         Cookie captchaCookie = new Cookie(
                 "captcha_hash",
                 Base64.getEncoder().encodeToString(captchaResponse.hash().getBytes())
         );
+
         captchaCookie.setPath("/");
-        captchaCookie.setMaxAge(30);
+        captchaCookie.setMaxAge(CAPTCHA_EXPIRY);
         response.addCookie(captchaCookie);
 
-        return captchaResponse.captchaImage();
+        byte[] captchaImage = captchaResponse.captchaImage();
+
+        return ResponseEntity
+                .ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .body(captchaImage);
     }
 }

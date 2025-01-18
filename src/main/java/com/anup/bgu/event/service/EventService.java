@@ -13,5 +13,4 @@ public interface EventService {
     List<Event> getAllEventsByType(String eventType, String status);
     Event getEventById(String id);
     String getEventPicture(String id);
-
 }

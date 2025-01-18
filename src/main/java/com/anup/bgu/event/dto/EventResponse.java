@@ -17,6 +17,7 @@ public record EventResponse(
         String eventType,
         Integer maxMembers,
         Integer minMembers,
-        Integer currentRegistration
+        Integer currentRegistration,
+        String imageUri
 ) {
 }

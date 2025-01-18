@@ -42,20 +42,46 @@ public class ImageServiceImpl implements ImageService {
         return filePath;
     }
 
+    @Override
+    public byte[] getImage(String imagePath){
+        Path path = Paths.get(imagePath);
+        try {
+            return Files.readAllBytes(path);
+        } catch (IOException e) {
+            throw new InvalidImageException("Internal Server Error! Image does not exist.");
+        }
+    }
+
+
+
+//    @GetMapping("{id}/picture")
+//    public ResponseEntity<byte[]> getPicture(
+//            @PathVariable("id") @NotEmpty String id) {
+//
+//        String imagePath = imageServiceImpl.getEventImagePath(id);  // Method to get the image path by EventId
+//
+//        try {
+//            byte[] imageBytes = imageServiceImpl.getImageAsByteArray(imagePath); // Get the image as byte array
+//            return ResponseEntity.ok()
+//                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image.png\"")
+//                    .body(imageBytes);  // Return the image byte array
+//        } catch (IOException e) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+//        }
+//    }
+
     @Async
     private void saveFile(byte[] file, String targetPath) {
         int RETRY_THRESHOLD = 3;
+        Path path = Paths.get(targetPath);
         while (RETRY_THRESHOLD > 0) {
             try {
-                Path path = Paths.get(targetPath);
                 Files.write(path, file);
-                return;
             } catch (IOException e) {
-
+                throw new RuntimeException(e);
             }
             RETRY_THRESHOLD--;
         }
-        throw new InvalidImageException("Some error occurred while saving image");
     }
 
     private void validateFileExtension(String extension)
