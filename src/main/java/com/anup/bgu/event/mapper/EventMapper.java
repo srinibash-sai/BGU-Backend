@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 @Service
 public class EventMapper {
 
-    @Value("${api-base-url}")
+    @Value("${secret.api-base-url}")
     private String API_BASE_URL;
 
     public EventResponse toEventResponse(Event event) {
@@ -29,7 +29,7 @@ public class EventMapper {
                 event.getMaxMember(),
                 event.getMinMember(),
                 event.getCurrentRegistration(),
-                API_BASE_URL+ "/image/" + event.getId()
+                API_BASE_URL+ "/events/image/" + event.getId()
         );
     }
 

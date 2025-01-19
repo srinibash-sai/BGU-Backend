@@ -20,9 +20,9 @@ public class MailTempleteConfig {
     }
 
     @Bean
-    public SpringTemplateEngine thymeleafTemplateEngine(ITemplateResolver templateResolver) {
+    public SpringTemplateEngine thymeleafTemplateEngine() {
         SpringTemplateEngine templateEngine = new SpringTemplateEngine();
-        templateEngine.setTemplateResolver(templateResolver);
+        templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
 }

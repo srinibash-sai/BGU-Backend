@@ -9,9 +9,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface EventService {
-    Event createEvent(EventRequest request, MultipartFile file);
-    Event updateEvent(String id, EventUpdateRequest request,MultipartFile file);
+    Event createEvent(EventRequest request);
+    Event updateEvent(String id, EventUpdateRequest request);
     List<EventResponse> getAllEvents(String eventType, String status);
     Event getEventById(String id);
     byte[] getEventImage(String id);
+    String updateEventImage(String id, MultipartFile file);
 }

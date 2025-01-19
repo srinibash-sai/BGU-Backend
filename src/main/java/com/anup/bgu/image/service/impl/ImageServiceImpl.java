@@ -2,6 +2,8 @@ package com.anup.bgu.image.service.impl;
 
 import com.anup.bgu.exceptions.models.InvalidImageException;
 import com.anup.bgu.image.service.ImageService;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 @Service
 public class ImageServiceImpl implements ImageService {
 
@@ -19,11 +22,20 @@ public class ImageServiceImpl implements ImageService {
     private final String paymentsPath = uploadPath + "PaymentsScreenshot" + File.separator;
     private final String eventPath = uploadPath + "EventPoster" + File.separator;
 
+    @PostConstruct
+    void init()
+    {
+        creatFilePath(eventPath);
+        creatFilePath(paymentsPath);
+    }
+
     @Override
     public String saveImage(MultipartFile file, String EventId) {
 
         final String fileName = file.getOriginalFilename(); // get the current filename of image
         final String extension = extractFileExtension(fileName);
+
+        log.debug("saveImage() -> extension: {}", extension);
 
         validateFileExtension(extension);
 
@@ -36,6 +48,7 @@ public class ImageServiceImpl implements ImageService {
 
         final String newFileName = EventId + "." + extension;
         final String filePath = eventPath + newFileName;
+        log.debug("saveImage() -> filePath: {}",filePath);
 
         saveFile(imageByte,filePath);
 
@@ -44,10 +57,10 @@ public class ImageServiceImpl implements ImageService {
 
     @Override
     public byte[] getImage(String imagePath){
-        Path path = Paths.get(imagePath);
         try {
+            Path path = Paths.get(imagePath);
             return Files.readAllBytes(path);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new InvalidImageException("Internal Server Error! Image does not exist.");
         }
     }
@@ -55,11 +68,14 @@ public class ImageServiceImpl implements ImageService {
     @Async
     private void saveFile(byte[] file, String targetPath) {
         int RETRY_THRESHOLD = 3;
-        Path path = Paths.get(targetPath);
+
         while (RETRY_THRESHOLD > 0) {
             try {
+                Path path = Paths.get(targetPath);
+                log.debug("saveFile() -> RETRY_THRESHOLD: {}, path: {}", RETRY_THRESHOLD, path);
                 Files.write(path, file);
             } catch (IOException e) {
+                log.warn("saveFile() -> IOException: {}", e.getMessage(), e);
                 throw new RuntimeException(e);
             }
             RETRY_THRESHOLD--;
@@ -87,5 +103,17 @@ public class ImageServiceImpl implements ImageService {
             throw new InvalidImageException("Invalid image! Invalid File Format.");
         }
         return fileName.substring(extentionDot + 1).toLowerCase();
+    }
+
+    private void creatFilePath(String targetFolderPath) {
+        File targetFolder = new File(targetFolderPath);
+        if (!targetFolder.exists()) {
+            log.debug("createFilePath() -> targetFolderPath: {}", targetFolderPath);
+            boolean created = targetFolder.mkdirs();
+            if (!created) {
+                log.warn("createFolder() -> failed to create target folder: {}", targetFolderPath);
+                throw new InvalidImageException("Some error occurred while creating the folder");
+            }
+        }
     }
 }

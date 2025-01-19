@@ -29,16 +29,13 @@ public class EventServiceImpl implements EventService {
     private final EventMapper eventMapper;
 
     @Override
-    public Event createEvent(EventRequest eventRequest, MultipartFile file) {
+    public Event createEvent(EventRequest eventRequest) {
         final String id = UUID.randomUUID().toString();
-
-        String imagePath = imageService.saveImage(file, id);
 
         Event event = Event.builder()
                 .id(id)
                 .title(eventRequest.title())
                 .description(eventRequest.description())
-                .pathToImage(imagePath)
                 .status(Status.valueOf(eventRequest.status()))
                 .rules(eventRequest.rules())
                 .dateTime(eventRequest.dateTime())
@@ -63,7 +60,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    public Event updateEvent(String id, EventUpdateRequest request, MultipartFile file) {
+    public Event updateEvent(String id, EventUpdateRequest request) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
 
@@ -151,5 +148,15 @@ public class EventServiceImpl implements EventService {
     public byte[] getEventImage(String id) {
         Event event = getEventById(id);
         return imageService.getImage(event.getPathToImage());
+    }
+
+    @Override
+    public String updateEventImage(String id, MultipartFile file) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+        String imagePath = imageService.saveImage(file, id);
+        event.setPathToImage(imagePath);
+        eventRepository.save(event);
+        return imagePath;
     }
 }

@@ -11,8 +11,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,10 +34,9 @@ public class EventController {
     // Create a new event
     @PostMapping
     public ResponseEntity<EventResponse> createEvent(
-            @RequestBody @Valid EventRequest eventRequest,
-            @RequestParam("file") @Valid @NotNull MultipartFile file
+            @RequestBody @Valid EventRequest eventRequest
     ) {
-        Event event = eventService.createEvent(eventRequest, file);
+        Event event = eventService.createEvent(eventRequest);
         return new ResponseEntity<>(eventMapper.toEventResponse(event), HttpStatus.CREATED);
     }
 
@@ -45,10 +44,9 @@ public class EventController {
     @PutMapping("/{id}")
     public ResponseEntity<EventResponse> updateEvent(
             @PathVariable("id") @NotEmpty String id,
-            @RequestBody @Valid EventUpdateRequest eventUpdateRequest,
-            @RequestParam("file") MultipartFile file
+            @RequestBody @Valid EventUpdateRequest eventUpdateRequest
     ) {
-        var event = eventService.updateEvent(id, eventUpdateRequest, file);
+        var event = eventService.updateEvent(id, eventUpdateRequest);
         return new ResponseEntity<>(eventMapper.toEventResponse(event), HttpStatus.OK);
     }
 
@@ -81,8 +79,18 @@ public class EventController {
             @PathVariable("id") @NotEmpty String id
     ) {
         byte[] imageBytes = eventService.getEventImage(id);
-        return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"image.png\"")
+        return ResponseEntity
+            .ok()
+            .contentType(MediaType.IMAGE_JPEG)
             .body(imageBytes);
+    }
+
+    @PutMapping ("/image/{id}")
+    public ResponseEntity<Void> updateEventImage(
+            @PathVariable("id") @NotEmpty String id,
+            @RequestParam @Valid @NotNull MultipartFile file
+    ) {
+        eventService.updateEventImage(id,file);
+        return ResponseEntity.ok().build();
     }
 }
