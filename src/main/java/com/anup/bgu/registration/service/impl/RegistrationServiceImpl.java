@@ -1,5 +1,6 @@
 package com.anup.bgu.registration.service.impl;
 
+import com.anup.bgu.registration.dto.RegistrationRequest;
 import com.anup.bgu.registration.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,4 +10,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
+    @Override
+    public void register(String eventId, RegistrationRequest request) {
+
+    }
 }

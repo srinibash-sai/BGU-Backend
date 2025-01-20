@@ -5,12 +5,11 @@ import com.anup.bgu.payments.entities.Payment;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-import jakarta.persistence.EnumType;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Builder
@@ -18,12 +17,15 @@ import java.time.Instant;
 @NoArgsConstructor
 @Getter
 @Setter
-public class SoloRegistration {
+public class TeamRegistration {
     @Id
     private String id;
 
-    @Column(nullable = false, length = 100)
-    private String name;
+    @Column(nullable = false, length = 200)
+    private String leaderName;
+
+    @Column(nullable = false, length = 200)
+    private String teamName;
 
     @NotNull
     @Email
@@ -40,6 +42,9 @@ public class SoloRegistration {
 
     @ManyToOne
     private Event event;
+
+    @OneToMany(mappedBy = "teamRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<TeamMember> teamMembers;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)

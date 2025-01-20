@@ -16,20 +16,21 @@ public class EventMapper {
 
     public EventResponse toEventResponse(Event event) {
         return new EventResponse(
-                event.getId(),
-                event.getTitle(),
-                event.getDescription(),
-                event.getEventType().toString(),
-                event.getStatus().toString(),
-                event.getRules(),
-                event.getDateTime(),
-                event.getCoordinatorName(),
-                event.getCoordinatorNumber(),
-                event.getEventType().toString(),
-                event.getMaxMember(),
-                event.getMinMember(),
-                event.getCurrentRegistration(),
-                API_BASE_URL+ "/events/image/" + event.getId()
+            event.getId(),
+            event.getTitle(),
+            event.getDescription(),
+            event.getStatus().toString(),
+            event.getRules(),
+            event.getDateTime(),
+            event.getCoordinatorName(),
+            event.getCoordinatorNumber(),
+            event.getEventType().toString(),
+            event.getTeamType().toString(),
+            event.getMaxMember(),
+            event.getMinMember(),
+            event.getCurrentRegistration(),
+            API_BASE_URL+ "/events/image/" + event.getId(),
+            event.getAmount()
         );
     }
 
