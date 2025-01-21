@@ -1,9 +1,7 @@
 package com.anup.bgu.exceptions.handler;
 
 import com.anup.bgu.exceptions.dto.ErrorResponse;
-import com.anup.bgu.exceptions.models.EventNotFoundException;
-import com.anup.bgu.exceptions.models.InvalidImageException;
-import com.anup.bgu.exceptions.models.InvalidRequestException;
+import com.anup.bgu.exceptions.models.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -21,21 +19,21 @@ import java.util.Map;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidImageException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(InvalidImageException ex) {
+    public ResponseEntity<ErrorResponse> handleInvalidImageException(InvalidImageException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidRequestException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(InvalidRequestException ex) {
+    public ResponseEntity<ErrorResponse> handleInvalidRequestException(InvalidRequestException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()));
     }
 
     @ExceptionHandler(EventNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCustomException(EventNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleEventNotFoundException(EventNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(HttpStatus.NOT_FOUND.toString(), ex.getMessage()));
@@ -53,4 +51,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(RegistrationProcessingException.class)
+    public ResponseEntity<ErrorResponse> handleRegistrationProcessingException(RegistrationProcessingException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(PaymentConflictException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentConflictException(PaymentConflictException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(HttpStatus.CONFLICT.toString(), ex.getMessage()));
+    }
 }

@@ -9,16 +9,19 @@ import jakarta.persistence.EnumType;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class SoloRegistration {
+public class SoloRegistration implements Serializable {
     @Id
     private String id;
 
@@ -48,4 +51,7 @@ public class SoloRegistration {
     @OneToOne(optional = true)
     @JoinColumn(nullable = true)
     private Payment payment;
+
+    @Column(nullable = false, length = 100)
+    private String collegeName;
 }

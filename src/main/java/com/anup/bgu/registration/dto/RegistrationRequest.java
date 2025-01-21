@@ -27,6 +27,8 @@ public record RegistrationRequest(
         @Pattern(regexp = "^(MALE|FEMALE|OTHERS)$", message = "Gender must be one of the following values: MALE, FEMALE, OTHERS.")
         String gender,
 
-        List<TeamMember> teamMembers
+        List<TeamMember> teamMembers,
+
+        String collegeName
 ) {
 }

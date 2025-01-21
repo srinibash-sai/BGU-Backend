@@ -7,13 +7,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
+import java.io.Serializable;
+
 @Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class TeamMember {
+public class TeamMember implements Serializable {
     @Id
     private String id;
 
@@ -24,10 +26,7 @@ public class TeamMember {
     @Email
     private String email;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "team_registration_id")
     private TeamRegistration teamRegistration;
-
-    @ManyToOne
-    private Event event;
 }

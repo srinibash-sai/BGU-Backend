@@ -7,7 +7,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.List;
 
@@ -17,7 +19,8 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-public class TeamRegistration {
+@EntityListeners(AuditingEntityListener.class)
+public class TeamRegistration implements Serializable {
     @Id
     private String id;
 
@@ -43,7 +46,7 @@ public class TeamRegistration {
     @ManyToOne
     private Event event;
 
-    @OneToMany(mappedBy = "teamRegistration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "teamRegistration", cascade = CascadeType.ALL)
     private List<TeamMember> teamMembers;
 
     @CreatedDate
@@ -53,4 +56,7 @@ public class TeamRegistration {
     @OneToOne(optional = true)
     @JoinColumn(nullable = true)
     private Payment payment;
+
+    @Column(nullable = false, length = 100)
+    private String collegeName;
 }

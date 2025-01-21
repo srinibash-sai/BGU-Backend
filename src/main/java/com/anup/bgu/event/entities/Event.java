@@ -3,6 +3,8 @@ package com.anup.bgu.event.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Entity
 @Builder
 @Getter
@@ -10,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class Event {
+public class Event implements Serializable {
     @Id
     private String id;
     @Column(length = 200)
