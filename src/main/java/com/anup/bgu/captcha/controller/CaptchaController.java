@@ -2,7 +2,6 @@ package com.anup.bgu.captcha.controller;
 
 import com.anup.bgu.captcha.dto.CaptchaResponse;
 import com.anup.bgu.captcha.service.CaptchaService;
-import com.anup.bgu.event.entities.Event;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

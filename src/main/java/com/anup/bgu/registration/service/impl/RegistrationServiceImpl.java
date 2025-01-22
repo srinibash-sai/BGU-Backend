@@ -5,10 +5,12 @@ import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.Status;
 import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.RegistrationProcessingException;
+import com.anup.bgu.otp.dto.OtpResponse;
+import com.anup.bgu.otp.service.OtpService;
 import com.anup.bgu.registration.dto.RegSuccess;
 import com.anup.bgu.registration.dto.RegistrationRequest;
 import com.anup.bgu.registration.entities.*;
-import com.anup.bgu.registration.repo.NonBguRegistrationCacheRepo;
+import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import com.anup.bgu.registration.service.RegistrationService;
@@ -28,10 +30,11 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final EventService eventService;
     private final SoloRegistrationRepository soloRepository;
     private final TeamRegistrationRepository teamRepository;
-    private final NonBguRegistrationCacheRepo nonBguCacheRepo;
+    private final RegistrationCacheRepo registrationCacheRepo;
+    private final OtpService otpService;
 
     @Override
-    public RegSuccess register(String eventId, RegistrationRequest request) {
+    public OtpResponse register(String eventId, RegistrationRequest request) {
         Event event = eventService.getEventById(eventId);
 
         if (!event.getStatus().equals(Status.ONGOING)) {
@@ -52,11 +55,47 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 
-    private RegSuccess doTeamRegistration(Event event, RegistrationRequest request) {
+    @Override
+    public RegSuccess verifyOtp(String registrationId, String otp) {
+        otpService.verifyOtp(registrationId, otp);
 
-        if(request.email().endsWith("bgu.ac.in"))
-        {
-            TeamRegistration teamRegistration=TeamRegistration.builder()
+        Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);
+        Optional<TeamRegistration> teamRegistrationOptional = registrationCacheRepo.findTeamRegistrationById(registrationId);
+
+        if (soloRegistrationOptional.isPresent()) {
+            SoloRegistration soloRegistration = soloRegistrationOptional.get();
+            return proceedSolo(registrationId, soloRegistration);
+        } else {
+            TeamRegistration teamRegistration = teamRegistrationOptional.get();
+            return proceedTeam(registrationId, teamRegistration);
+        }
+    }
+
+    private RegSuccess proceedTeam(String registrationId, TeamRegistration teamRegistration) {
+        if (teamRegistration.getStudentType().equals(StudentType.BGU)) {
+            teamRepository.save(teamRegistration);
+            //send notification
+            return new RegSuccess(registrationId, false, 0);
+
+        } else {
+            return new RegSuccess(registrationId, true, teamRegistration.getEvent().getAmount());
+        }
+    }
+
+    private RegSuccess proceedSolo(String registrationId, SoloRegistration soloRegistration) {
+        if (soloRegistration.getStudentType().equals(StudentType.BGU)) {
+            soloRepository.save(soloRegistration);
+            //send notification
+            return new RegSuccess(registrationId, false, 0);
+        } else {
+            return new RegSuccess(registrationId, true, soloRegistration.getEvent().getAmount());
+        }
+    }
+
+    private OtpResponse doTeamRegistration(Event event, RegistrationRequest request) {
+
+        if (request.email().endsWith("bgu.ac.in")) {
+            TeamRegistration teamRegistration = TeamRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .leaderName(request.name())
                     .teamName(request.teamName())
@@ -76,11 +115,11 @@ public class RegistrationServiceImpl implements RegistrationService {
             }
             teamRegistration.setTeamMembers(request.teamMembers());
 
-            teamRegistration = teamRepository.save(teamRegistration);
-            return new RegSuccess(teamRegistration.getId(),false,0);
-        }
-        else {
-            TeamRegistration teamRegistration=TeamRegistration.builder()
+            teamRegistration = registrationCacheRepo.save(teamRegistration);
+
+            return otpService.sendOtp(teamRegistration.getId(), teamRegistration.getEmail());
+        } else {
+            TeamRegistration teamRegistration = TeamRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .leaderName(request.name())
                     .teamName(request.teamName())
@@ -100,8 +139,10 @@ public class RegistrationServiceImpl implements RegistrationService {
             }
             teamRegistration.setTeamMembers(request.teamMembers());
 
-            teamRegistration = nonBguCacheRepo.save(teamRegistration);
-            return new RegSuccess(teamRegistration.getId(),true,event.getAmount());
+            teamRegistration = registrationCacheRepo.save(teamRegistration);
+
+            return otpService.sendOtp(teamRegistration.getId(), teamRegistration.getEmail());
+
         }
     }
 
@@ -124,10 +165,9 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 
-    private RegSuccess doSoloRegistration(Event event, RegistrationRequest request) {
-        if(request.email().endsWith("bgu.ac.in"))
-        {
-            SoloRegistration soloRegistration=SoloRegistration.builder()
+    private OtpResponse doSoloRegistration(Event event, RegistrationRequest request) {
+        if (request.email().endsWith("bgu.ac.in")) {
+            SoloRegistration soloRegistration = SoloRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .name(request.name())
                     .email(request.email())
@@ -137,11 +177,11 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .event(event)
                     .collegeName("Birla Global University")
                     .build();
-            soloRegistration = soloRepository.save(soloRegistration);
-            return new RegSuccess(soloRegistration.getId(),false,0);
-        }
-        else {
-            SoloRegistration soloRegistration=SoloRegistration.builder()
+            soloRegistration = registrationCacheRepo.save(soloRegistration);
+
+            return otpService.sendOtp(soloRegistration.getId(), soloRegistration.getEmail());
+        } else {
+            SoloRegistration soloRegistration = SoloRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .name(request.name())
                     .email(request.email())
@@ -151,8 +191,9 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .event(event)
                     .collegeName(request.collegeName())
                     .build();
-            soloRegistration = nonBguCacheRepo.save(soloRegistration);
-            return new RegSuccess(soloRegistration.getId(),true,event.getAmount());
+            soloRegistration = registrationCacheRepo.save(soloRegistration);
+
+            return otpService.sendOtp(soloRegistration.getId(), soloRegistration.getEmail());
         }
     }
 

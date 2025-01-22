@@ -64,4 +64,18 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(HttpStatus.CONFLICT.toString(), ex.getMessage()));
     }
+
+    @ExceptionHandler(BadOtpException.class)
+    public ResponseEntity<ErrorResponse> handleBadOtpException(BadOtpException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(HttpStatus.BAD_REQUEST.toString(), ex.getMessage()));
+    }
+
+    @ExceptionHandler(CaptchaException.class)
+    public ResponseEntity<ErrorResponse> handleCaptchaException(CaptchaException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(HttpStatus.FORBIDDEN.toString(), ex.getMessage()));
+    }
 }

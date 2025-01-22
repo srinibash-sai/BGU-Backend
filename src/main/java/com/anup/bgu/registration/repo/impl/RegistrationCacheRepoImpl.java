@@ -2,7 +2,7 @@ package com.anup.bgu.registration.repo.impl;
 
 import com.anup.bgu.registration.entities.SoloRegistration;
 import com.anup.bgu.registration.entities.TeamRegistration;
-import com.anup.bgu.registration.repo.NonBguRegistrationCacheRepo;
+import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class NonBguRegistrationCacheRepoImpl implements NonBguRegistrationCacheRepo {
+public class RegistrationCacheRepoImpl implements RegistrationCacheRepo {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final String HASH_KEY_SOLO = "Non_BGU_SOLO";

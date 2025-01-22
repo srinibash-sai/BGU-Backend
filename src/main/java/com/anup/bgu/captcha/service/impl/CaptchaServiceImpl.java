@@ -3,6 +3,7 @@ package com.anup.bgu.captcha.service.impl;
 import cn.apiclub.captcha.Captcha;
 import com.anup.bgu.captcha.dto.CaptchaResponse;
 import com.anup.bgu.captcha.service.CaptchaService;
+import com.anup.bgu.exceptions.models.CaptchaException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,16 +28,16 @@ public class CaptchaServiceImpl implements CaptchaService {
     private int CAPTCHA_EXPIRY;
 
     @Override
-    public boolean validateCaptcha(String userAnswer, String hash) {
+    public void validateCaptcha(String userAnswer, String hash) {
         if (userAnswer == null || hash == null) {
-            return false;
+            throw new CaptchaException("Bot detected! You are not a human.");
         }
 
         String decoded = new String(Base64.getDecoder().decode(hash));
 
         String[] parts = decoded.split("\\|");
         if (parts.length != 3) {
-            return false;  // Invalid data in the cookie
+            throw new CaptchaException("Invalid Captcha!");  // Invalid data in the cookie
         }
 
         String hashedAnswerFromCookie = parts[0];
@@ -44,17 +45,20 @@ public class CaptchaServiceImpl implements CaptchaService {
         String hmacFromCookie = parts[2];
 
         if (!validateHmac(hashedAnswerFromCookie + "|" + expirationTimestamp, hmacFromCookie, CAPTCHA_SECRET)) {
-            return false;  // HMAC validation failed (data has been tampered)
+            throw new CaptchaException("Captcha has been tampered"); // HMAC validation failed (data has been tampered)
         }
 
         // Check if the CAPTCHA has expired (expiration time is stored in seconds)
         if (Instant.now().getEpochSecond() > expirationTimestamp) {
-            return false;  // CAPTCHA expired
+            throw new CaptchaException("CAPTCHA expired!");// CAPTCHA expired
         }
 
         String hashedUserAnswer =hashString(userAnswer);
-
-        return hashedAnswerFromCookie.equals(hashedUserAnswer);  // Compare hashed input with the stored hash
+        // Compare hashed input with the stored hash
+        if(!hashedAnswerFromCookie.equals(hashedUserAnswer))
+        {
+            throw new CaptchaException("Captcha not matched!");
+        }
     }
 
     @Override

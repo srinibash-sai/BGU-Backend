@@ -5,7 +5,7 @@ import com.anup.bgu.registration.entities.TeamRegistration;
 
 import java.util.Optional;
 
-public interface NonBguRegistrationCacheRepo {
+public interface RegistrationCacheRepo {
     SoloRegistration save(SoloRegistration soloRegistration);
     TeamRegistration save(TeamRegistration teamRegistration);
     Optional<SoloRegistration> findSoloRegistrationById(String id);

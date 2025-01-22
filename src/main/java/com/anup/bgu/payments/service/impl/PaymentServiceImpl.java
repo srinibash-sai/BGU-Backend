@@ -7,7 +7,7 @@ import com.anup.bgu.payments.repo.PaymentRepository;
 import com.anup.bgu.payments.service.PaymentService;
 import com.anup.bgu.registration.entities.SoloRegistration;
 import com.anup.bgu.registration.entities.TeamRegistration;
-import com.anup.bgu.registration.repo.NonBguRegistrationCacheRepo;
+import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final SoloRegistrationRepository soloRepository;
     private final TeamRegistrationRepository teamRepository;
-    private final NonBguRegistrationCacheRepo nonBguCacheRepo;
+    private final RegistrationCacheRepo registrationCacheRepo;
     private final PaymentRepository paymentRepository;
     private final ImageService imageService;
 
@@ -34,8 +34,8 @@ public class PaymentServiceImpl implements PaymentService {
 
         validateIfTransactionIdExists(transactionId);
 
-        Optional<SoloRegistration> soloRegistrationOptional = nonBguCacheRepo.findSoloRegistrationById(registrationId);
-        Optional<TeamRegistration> teamRegistrationOptional = nonBguCacheRepo.findTeamRegistrationById(registrationId);
+        Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);
+        Optional<TeamRegistration> teamRegistrationOptional = registrationCacheRepo.findTeamRegistrationById(registrationId);
 
         if (soloRegistrationOptional.isPresent()) {
             //do solo
@@ -54,7 +54,8 @@ public class PaymentServiceImpl implements PaymentService {
             soloRegistration.setPayment(payment);
 
             soloRepository.save(soloRegistration);
-        } else {
+        }
+        else if(teamRegistrationOptional.isPresent()) {
             //do team
             TeamRegistration teamRegistration = teamRegistrationOptional.get();
 
