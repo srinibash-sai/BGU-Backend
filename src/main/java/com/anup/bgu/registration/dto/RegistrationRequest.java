@@ -25,10 +25,14 @@ public record RegistrationRequest(
         String phone,
 
         @Pattern(regexp = "^(MALE|FEMALE|OTHERS)$", message = "Gender must be one of the following values: MALE, FEMALE, OTHERS.")
+        @NotBlank(message = "Gender is a required field.")
         String gender,
 
         List<TeamMember> teamMembers,
 
-        String collegeName
+        String collegeName,
+
+        @NotBlank(message = "Captcha is a required field.")
+        String captcha
 ) {
 }

@@ -1,6 +1,7 @@
 package com.anup.bgu.otp.service.impl;
 
 import com.anup.bgu.exceptions.models.BadOtpException;
+import com.anup.bgu.mail.dto.MailData;
 import com.anup.bgu.mail.service.EmailService;
 import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.otp.entities.OtpCache;
@@ -8,6 +9,7 @@ import com.anup.bgu.otp.repo.OtpCacheRepository;
 import com.anup.bgu.otp.service.OtpService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -20,8 +22,8 @@ import java.util.Optional;
 @AllArgsConstructor
 public class OtpServiceImpl implements OtpService {
 
-    private final EmailService emailService;
     private final OtpCacheRepository otpCacheRepository;
+    private final RedisTemplate redisTemplate;
 
     private static final int OTP_LENGTH = 6;
 
@@ -48,12 +50,15 @@ public class OtpServiceImpl implements OtpService {
         Map<String, Object> variables = new HashMap<>();
         variables.put("otp", otp);
 
-        emailService.sendEmail(
+        MailData mailData=new MailData(
                 email,
                 "OTP Verification",
                 "otp-template",
                 variables
         );
+
+        redisTemplate.convertAndSend("mail",mailData);
+
         return new OtpResponse(registrationId);
     }
 

@@ -1,10 +1,12 @@
 package com.anup.bgu.registration.service.impl;
 
+import com.anup.bgu.captcha.service.CaptchaService;
 import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.Status;
 import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.RegistrationProcessingException;
+import com.anup.bgu.otp.dto.OtpRequest;
 import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.otp.service.OtpService;
 import com.anup.bgu.registration.dto.RegSuccess;
@@ -56,7 +58,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     @Override
-    public RegSuccess verifyOtp(String registrationId, String otp) {
+    public RegSuccess verifyOtp(OtpRequest otpRequest) {
+        final String registrationId=otpRequest.registrationId();
+        final String otp=otpRequest.otp();
+
         otpService.verifyOtp(registrationId, otp);
 
         Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);

@@ -3,7 +3,9 @@ package com.anup.bgu.payments.controller;
 import com.anup.bgu.payments.entities.Payment;
 import com.anup.bgu.payments.service.PaymentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -28,6 +30,7 @@ public class PaymentController {
             MultipartFile file,
 
             @RequestParam(value = "transactionId", required = true)
+            @NotEmpty @Size(max = 32, message = "Transaction ID can not be more than 32.")
             String transactionId,
 
             @RequestParam(value = "amount", required = true)

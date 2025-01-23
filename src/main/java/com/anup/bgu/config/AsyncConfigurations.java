@@ -20,4 +20,15 @@ public class AsyncConfigurations {
         executor.setAwaitTerminationSeconds(30);
         return executor;
     }
+
+    @Bean
+    ThreadPoolTaskExecutor redisMailTaskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(10); // Set the core pool size
+        executor.setMaxPoolSize(200); // Set the maximum pool size
+        executor.setQueueCapacity(200); // Set the queue capacity
+        executor.setThreadNamePrefix("MailThread-");
+        executor.initialize();
+        return executor;
+    }
 }

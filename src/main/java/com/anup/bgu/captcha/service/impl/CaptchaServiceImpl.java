@@ -27,6 +27,8 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Value("${secret.captcha-expiry}")
     private int CAPTCHA_EXPIRY;
 
+    //use redis to store used captcha
+
     @Override
     public void validateCaptcha(String userAnswer, String hash) {
         if (userAnswer == null || hash == null) {
