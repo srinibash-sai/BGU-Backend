@@ -30,6 +30,7 @@ import java.util.UUID;
 @Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
 
+    public static final String BGU_MAIL_DOMAIN = "bgu.ac.in";
     private final EventService eventService;
     private final SoloRegistrationRepository soloRepository;
     private final TeamRegistrationRepository teamRepository;
@@ -81,12 +82,15 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public List<RegistrationResponse> getAllRegistration(String eventId) {
         Event event = eventService.getEventById(eventId);
+        log.info("getAllRegistration() -> {}",event);
 
         if (event.getTeamType().equals(EventTeamType.SOLO)) {
             List<SoloRegistration> soloRegistrations = soloRepository.findAllByEvent(event);
+            log.info("getAllRegistration() -> {}",soloRegistrations);
             return registrationMapper.toSoloListRegistrationResponse(soloRegistrations);
         } else {
             List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
+            log.info("getAllRegistration() -> {}",teamRegistrations);
             return registrationMapper.toTeamListRegistrationResponse(teamRegistrations);
         }
     }
@@ -114,7 +118,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     private OtpResponse doTeamRegistration(Event event, RegistrationRequest request) {
 
-        if (request.email().endsWith("bgu.ac.in")) {
+        if (request.email().endsWith(BGU_MAIL_DOMAIN)) {
             TeamRegistration teamRegistration = TeamRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .leaderName(request.name())
@@ -186,7 +190,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     private OtpResponse doSoloRegistration(Event event, RegistrationRequest request) {
-        if (request.email().endsWith("bgu.ac.in")) {
+        if (request.email().endsWith(BGU_MAIL_DOMAIN)) {
             SoloRegistration soloRegistration = SoloRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .name(request.name())

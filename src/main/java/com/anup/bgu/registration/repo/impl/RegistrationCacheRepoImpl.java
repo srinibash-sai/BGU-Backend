@@ -15,8 +15,8 @@ import java.util.Optional;
 public class RegistrationCacheRepoImpl implements RegistrationCacheRepo {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final String HASH_KEY_SOLO = "Non_BGU_SOLO";
-    private final String HASH_KEY_TEAM = "Non_BGU_TEAM";
+    private final String HASH_KEY_SOLO = "SOLO_Registration_CACHE";
+    private final String HASH_KEY_TEAM = "TEAM_Registration_CACHE";
     private final Duration timeToLive = Duration.ofMinutes(5);
 
     @Override
@@ -47,7 +47,7 @@ public class RegistrationCacheRepoImpl implements RegistrationCacheRepo {
 
     @Override
     public Optional<TeamRegistration> findTeamRegistrationById(String id) {
-        Object o = redisTemplate.opsForHash().get(HASH_KEY_SOLO, id);
+        Object o = redisTemplate.opsForHash().get(HASH_KEY_TEAM, id);
         if(o==null)
         {
             return Optional.empty();

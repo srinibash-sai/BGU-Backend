@@ -19,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 @EntityListeners(AuditingEntityListener.class)
 public class TeamRegistration implements Serializable {
     @Id
@@ -53,7 +54,7 @@ public class TeamRegistration implements Serializable {
     @Column(updatable = false, nullable = false)
     private Instant registrationDate;
 
-    @OneToOne(optional = true)
+    @OneToOne(optional = true, cascade = CascadeType.ALL)
     @JoinColumn(nullable = true)
     private Payment payment;
 

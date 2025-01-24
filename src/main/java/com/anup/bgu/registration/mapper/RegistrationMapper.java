@@ -7,6 +7,7 @@ import com.anup.bgu.registration.entities.SoloRegistration;
 import com.anup.bgu.registration.entities.StudentType;
 import com.anup.bgu.registration.entities.TeamMember;
 import com.anup.bgu.registration.entities.TeamRegistration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class RegistrationMapper {
 
@@ -71,10 +73,13 @@ public class RegistrationMapper {
     }
 
     public List<RegistrationResponse> toSoloListRegistrationResponse(List<SoloRegistration> soloRegistrations) {
+        log.info("toSoloListRegistrationResponse() -> {}",soloRegistrations.toString());
         List<RegistrationResponse> registrationResponses = new ArrayList<>();
         for (SoloRegistration soloRegistration : soloRegistrations) {
+            log.info("toSoloListRegistrationResponse() -> for loop -> {}",soloRegistration.toString());
             registrationResponses.add(toSoloRegistrationResponse(soloRegistration));
         }
+        log.info("toSoloListRegistrationResponse() -> {}",registrationResponses.toString());
         return registrationResponses;
     }
 

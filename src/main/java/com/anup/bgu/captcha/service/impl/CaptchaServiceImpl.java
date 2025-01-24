@@ -39,7 +39,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void validateCaptcha(String userAnswer, String hash) {
         if (captchaCacheRepo.isMemberOfSet(hash)) {
-            throw new CaptchaException("Bot detected! You are not a human.");
+            throw new CaptchaException("Captcha already used! Please generate another.");
         }
         if (userAnswer == null || hash == null) {
             throw new CaptchaException("Bot detected! You are not a human.");

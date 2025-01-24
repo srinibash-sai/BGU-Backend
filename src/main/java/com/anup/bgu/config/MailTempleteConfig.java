@@ -25,6 +25,4 @@ public class MailTempleteConfig {
         templateEngine.setTemplateResolver(thymeleafTemplateResolver());
         return templateEngine;
     }
-
-
 }

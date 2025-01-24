@@ -21,6 +21,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @Getter
 @Setter
+@ToString
 public class SoloRegistration implements Serializable {
     @Id
     private String id;
@@ -48,7 +49,7 @@ public class SoloRegistration implements Serializable {
     @Column(updatable = false, nullable = false)
     private Instant registrationDate;
 
-    @OneToOne(optional = true)
+    @OneToOne(optional = true, cascade = CascadeType.ALL)
     @JoinColumn(nullable = true)
     private Payment payment;
 
