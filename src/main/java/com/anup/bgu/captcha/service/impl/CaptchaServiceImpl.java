@@ -2,8 +2,10 @@ package com.anup.bgu.captcha.service.impl;
 
 import cn.apiclub.captcha.Captcha;
 import com.anup.bgu.captcha.dto.CaptchaResponse;
+import com.anup.bgu.captcha.repo.CaptchaCacheRepo;
 import com.anup.bgu.captcha.service.CaptchaService;
 import com.anup.bgu.exceptions.models.CaptchaException;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
+
 @Service
 public class CaptchaServiceImpl implements CaptchaService {
 
@@ -27,10 +30,17 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Value("${secret.captcha-expiry}")
     private int CAPTCHA_EXPIRY;
 
-    //use redis to store used captcha
+    private final CaptchaCacheRepo captchaCacheRepo;
+
+    public CaptchaServiceImpl(CaptchaCacheRepo captchaCacheRepo) {
+        this.captchaCacheRepo = captchaCacheRepo;
+    }
 
     @Override
     public void validateCaptcha(String userAnswer, String hash) {
+        if (captchaCacheRepo.isMemberOfSet(hash)) {
+            throw new CaptchaException("Bot detected! You are not a human.");
+        }
         if (userAnswer == null || hash == null) {
             throw new CaptchaException("Bot detected! You are not a human.");
         }
@@ -55,48 +65,44 @@ public class CaptchaServiceImpl implements CaptchaService {
             throw new CaptchaException("CAPTCHA expired!");// CAPTCHA expired
         }
 
-        String hashedUserAnswer =hashString(userAnswer);
+        String hashedUserAnswer = hashString(userAnswer);
         // Compare hashed input with the stored hash
-        if(!hashedAnswerFromCookie.equals(hashedUserAnswer))
-        {
+        if (!hashedAnswerFromCookie.equals(hashedUserAnswer)) {
             throw new CaptchaException("Captcha not matched!");
         }
+        captchaCacheRepo.addValueToSet(hash);
     }
 
     @Override
-    public CaptchaResponse getCaptcha()
-    {
+    public CaptchaResponse getCaptcha() {
         Captcha captcha = createCaptcha();
         byte[] captchaImage = generateCaptchaImage(captcha);
 
-        String hashAnswer= getHashAnswer(captcha);
+        String hashAnswer = getHashAnswer(captcha);
 
-        return new CaptchaResponse(captchaImage,hashAnswer);
+        return new CaptchaResponse(captchaImage, hashAnswer);
     }
 
-    private String getHashAnswer(Captcha captcha)
-    {
-        String captchaAnswer=captcha.getAnswer();
-        String hashedAnswer=hashString(captchaAnswer);
-        long expirationTimestamp= Instant.now().getEpochSecond()+CAPTCHA_EXPIRY;
+    private String getHashAnswer(Captcha captcha) {
+        String captchaAnswer = captcha.getAnswer();
+        String hashedAnswer = hashString(captchaAnswer);
+        long expirationTimestamp = Instant.now().getEpochSecond() + CAPTCHA_EXPIRY;
 
         String hashWithExpiry = hashedAnswer + "|" + expirationTimestamp;
 
-        String hmac = generateHmac(hashWithExpiry,CAPTCHA_SECRET);
+        String hmac = generateHmac(hashWithExpiry, CAPTCHA_SECRET);
 
         return hashWithExpiry + "|" + hmac;
     }
 
-    private Captcha createCaptcha()
-    {
-        return new Captcha.Builder(200,80)
+    private Captcha createCaptcha() {
+        return new Captcha.Builder(200, 80)
                 .addBackground()
                 .addText()
                 .build();
     }
 
-    private String generateHmac(String data, String secretKey)
-    {
+    private String generateHmac(String data, String secretKey) {
         Mac sha256_HMAC = null;
         try {
             sha256_HMAC = Mac.getInstance("HmacSHA256");
@@ -113,8 +119,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         return Base64.getEncoder().encodeToString(hashBytes);
     }
 
-    private String hashString(String input)
-    {
+    private String hashString(String input) {
         MessageDigest digest = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
@@ -125,8 +130,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         return Base64.getEncoder().encodeToString(hashBytes);  // Base64 encode the hash to store in cookie
     }
 
-    private boolean validateHmac(String data, String hmac, String secretKey)
-    {
+    private boolean validateHmac(String data, String hmac, String secretKey) {
         String calculatedHmac = generateHmac(data, secretKey);
         return calculatedHmac.equals(hmac);
     }

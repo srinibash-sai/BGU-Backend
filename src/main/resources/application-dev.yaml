@@ -1,0 +1,41 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/bgu
+    username: user
+    password: pass
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 600000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL}
+    password: ${PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+secret:
+  key: vR4cTn8gWpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1bFj7YtAqE3rPzLwWbJkKr5iShzO2vTg9Q4pFz0KmXtN6V7eYd
+  cors: http://localhost:3000
+  captcha-secret: Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b
+  captcha-expiry: 300
+  api-base-url: http://localhost:8080

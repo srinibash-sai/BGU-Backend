@@ -1,6 +1,5 @@
 package com.anup.bgu.registration.service.impl;
 
-import com.anup.bgu.captcha.service.CaptchaService;
 import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.Status;
@@ -11,7 +10,9 @@ import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.otp.service.OtpService;
 import com.anup.bgu.registration.dto.RegSuccess;
 import com.anup.bgu.registration.dto.RegistrationRequest;
+import com.anup.bgu.registration.dto.RegistrationResponse;
 import com.anup.bgu.registration.entities.*;
+import com.anup.bgu.registration.mapper.RegistrationMapper;
 import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
@@ -34,6 +35,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final TeamRegistrationRepository teamRepository;
     private final RegistrationCacheRepo registrationCacheRepo;
     private final OtpService otpService;
+    private final RegistrationMapper registrationMapper;
 
     @Override
     public OtpResponse register(String eventId, RegistrationRequest request) {
@@ -59,8 +61,8 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     public RegSuccess verifyOtp(OtpRequest otpRequest) {
-        final String registrationId=otpRequest.registrationId();
-        final String otp=otpRequest.otp();
+        final String registrationId = otpRequest.registrationId();
+        final String otp = otpRequest.otp();
 
         otpService.verifyOtp(registrationId, otp);
 
@@ -73,6 +75,19 @@ public class RegistrationServiceImpl implements RegistrationService {
         } else {
             TeamRegistration teamRegistration = teamRegistrationOptional.get();
             return proceedTeam(registrationId, teamRegistration);
+        }
+    }
+
+    @Override
+    public List<RegistrationResponse> getAllRegistration(String eventId) {
+        Event event = eventService.getEventById(eventId);
+
+        if (event.getTeamType().equals(EventTeamType.SOLO)) {
+            List<SoloRegistration> soloRegistrations = soloRepository.findAllByEvent(event);
+            return registrationMapper.toSoloListRegistrationResponse(soloRegistrations);
+        } else {
+            List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
+            return registrationMapper.toTeamListRegistrationResponse(teamRegistrations);
         }
     }
 

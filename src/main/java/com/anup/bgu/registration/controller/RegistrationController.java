@@ -5,6 +5,7 @@ import com.anup.bgu.otp.dto.OtpRequest;
 import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.registration.dto.RegSuccess;
 import com.anup.bgu.registration.dto.RegistrationRequest;
+import com.anup.bgu.registration.dto.RegistrationResponse;
 import com.anup.bgu.registration.service.RegistrationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,6 +38,15 @@ public class RegistrationController {
         OtpResponse otpResponse = registrationService.register(id, registrationRequest);
 
         return new ResponseEntity<>(otpResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/getAllRegistration/{id}")
+    public ResponseEntity<List<RegistrationResponse>> getAllRegistration(
+            @PathVariable("id") @NotEmpty String id
+    ) {
+        List<RegistrationResponse> allRegistration = registrationService.getAllRegistration(id);
+
+        return new ResponseEntity<>(allRegistration, HttpStatus.OK);
     }
 
     @PostMapping("/verifyotp")

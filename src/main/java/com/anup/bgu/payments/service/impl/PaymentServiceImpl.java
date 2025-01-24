@@ -1,5 +1,6 @@
 package com.anup.bgu.payments.service.impl;
 
+import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.exceptions.models.PaymentConflictException;
 import com.anup.bgu.image.service.ImageService;
 import com.anup.bgu.payments.entities.Payment;
@@ -76,6 +77,17 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return null;
+    }
+
+    @Override
+    public byte[] getPaymentImage(String id) {
+        Optional<Payment> optionalPayment = paymentRepository.findById(id);
+        if (optionalPayment.isEmpty()) {
+            throw new PaymentConflictException("Screenshot Not exist!");
+        }
+        Payment payment=optionalPayment.get();
+
+        return imageService.getImage(payment.getPathToScreenshot());
     }
 
     private void validateIfTransactionIdExists(String transactionId) {
