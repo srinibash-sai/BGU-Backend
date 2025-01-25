@@ -23,7 +23,7 @@ import java.util.Optional;
 public class OtpServiceImpl implements OtpService {
 
     private final OtpCacheRepository otpCacheRepository;
-    private final RedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     private static final int OTP_LENGTH = 6;
 

@@ -3,21 +3,24 @@ package com.anup.bgu.payments.service.impl;
 import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.exceptions.models.PaymentConflictException;
 import com.anup.bgu.image.service.ImageService;
+import com.anup.bgu.mail.dto.MailData;
 import com.anup.bgu.payments.entities.Payment;
 import com.anup.bgu.payments.repo.PaymentRepository;
 import com.anup.bgu.payments.service.PaymentService;
 import com.anup.bgu.registration.entities.SoloRegistration;
+import com.anup.bgu.registration.entities.TeamMember;
 import com.anup.bgu.registration.entities.TeamRegistration;
 import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final RegistrationCacheRepo registrationCacheRepo;
     private final PaymentRepository paymentRepository;
     private final ImageService imageService;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Payment addPayment(MultipartFile file, String transactionId, Integer amount, String registrationId) {
@@ -56,6 +60,24 @@ public class PaymentServiceImpl implements PaymentService {
             soloRegistration.setPayment(payment);
 
             soloRepository.save(soloRegistration);
+
+            //email notification
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("studentName", soloRegistration.getName());
+            variables.put("eventTitle", soloRegistration.getEvent().getTitle());
+            variables.put("registrationId", registrationId);
+            variables.put("eventDateTime", soloRegistration.getEvent().getDateTime());
+            variables.put("coordinatorName", soloRegistration.getEvent().getCoordinatorName());
+            variables.put("coordinatorNumber", soloRegistration.getEvent().getCoordinatorNumber());
+
+            MailData mailData=new MailData(
+                    soloRegistration.getEmail(),
+                    "Registration Complete",
+                    "solo-registration",
+                    variables
+            );
+            redisTemplate.convertAndSend("mail",mailData);
+
         }
         else if(teamRegistrationOptional.isPresent()) {
             //do team
@@ -76,6 +98,31 @@ public class PaymentServiceImpl implements PaymentService {
             teamRegistration.setPayment(payment);
 
             teamRepository.save(teamRegistration);
+
+            //email notification
+            Map<String, Object> variables = new HashMap<>();
+            List<String> teamMembers = teamRegistration.getTeamMembers().stream()
+                    .map(TeamMember::getName)
+                    .collect(Collectors.toList());
+
+            variables.put("teamName", teamRegistration.getTeamName());
+            variables.put("eventTitle", teamRegistration.getEvent().getTitle());
+            variables.put("registrationId", registrationId);
+            variables.put("eventDateTime", teamRegistration.getEvent().getDateTime());
+            variables.put("coordinatorName", teamRegistration.getEvent().getCoordinatorName());
+            variables.put("coordinatorNumber", teamRegistration.getEvent().getCoordinatorNumber());
+            variables.put("teamMembers", teamMembers);
+
+            String subject = "Team " + teamRegistration.getTeamName() + " - Registration Confirmation for " + teamRegistration.getEvent().getTitle();
+
+            MailData mailData=new MailData(
+                    teamRegistration.getEmail(),
+                    subject,
+                    "team-registration",
+                    variables
+            );
+
+            redisTemplate.convertAndSend("mail",mailData);
         }
 
         return null;

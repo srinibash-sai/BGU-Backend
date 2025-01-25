@@ -88,7 +88,7 @@ public class EventController {
     @PutMapping ("/image/{id}")
     public ResponseEntity<Void> updateEventImage(
             @PathVariable("id") @NotEmpty String id,
-            @RequestParam @Valid @NotNull MultipartFile file
+            @RequestParam(value = "file") @Valid @NotNull MultipartFile file
     ) {
         eventService.updateEventImage(id,file);
         return ResponseEntity.ok().build();

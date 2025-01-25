@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .details {
+            margin-top: 20px;
+        }
+        .details th {
+            text-align: left;
+            padding-right: 10px;
+            padding-bottom: 8px;
+        }
+        .details td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        Hello, <span th:text="${studentName}">[Student Name]</span>!
+    </div>
+    <p>Thank you for registering for the event <strong th:text="${eventTitle}">[Event Title]</strong>! We are excited to have you join us.</p>
+
+    <div class="details">
+        <table>
+            <tr>
+                <th>Registration ID</th>
+                <td th:text="${registrationId}">[Registration ID]</td>
+            </tr>
+            <tr>
+                <th>Event Date & Time</th>
+                <td th:text="${eventDateTime}">[Event Date & Time]</td>
+            </tr>
+            <tr>
+                <th>Coordinator Name</th>
+                <td th:text="${coordinatorName}">[Coordinator Name]</td>
+            </tr>
+            <tr>
+                <th>Coordinator Contact</th>
+                <td th:text="${coordinatorNumber}">[Coordinator Number]</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>If you have any questions, feel free to reach out to the coordinator.</p>
+        <p>We look forward to seeing you at the event!</p>
+        <p>Best regards,<br/>The Event Team</p>
+    </div>
+</div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.Status;
 import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.RegistrationProcessingException;
+import com.anup.bgu.mail.dto.MailData;
 import com.anup.bgu.otp.dto.OtpRequest;
 import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.otp.service.OtpService;
@@ -19,11 +20,11 @@ import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import com.anup.bgu.registration.service.RegistrationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +38,8 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationCacheRepo registrationCacheRepo;
     private final OtpService otpService;
     private final RegistrationMapper registrationMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+
 
     @Override
     public OtpResponse register(String eventId, RegistrationRequest request) {
@@ -97,21 +100,67 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     private RegSuccess proceedTeam(String registrationId, TeamRegistration teamRegistration) {
         if (teamRegistration.getStudentType().equals(StudentType.BGU)) {
+            //BGU team
             teamRepository.save(teamRegistration);
-            //send notification
+
+            //email notification
+            Map<String, Object> variables = new HashMap<>();
+            List<String> teamMembers = teamRegistration.getTeamMembers().stream()
+                    .map(TeamMember::getName)
+                    .collect(Collectors.toList());
+
+            variables.put("teamName", teamRegistration.getTeamName());
+            variables.put("eventTitle", teamRegistration.getEvent().getTitle());
+            variables.put("registrationId", registrationId);
+            variables.put("eventDateTime", teamRegistration.getEvent().getDateTime());
+            variables.put("coordinatorName", teamRegistration.getEvent().getCoordinatorName());
+            variables.put("coordinatorNumber", teamRegistration.getEvent().getCoordinatorNumber());
+            variables.put("teamMembers", teamMembers);
+
+            String subject = "Team " + teamRegistration.getTeamName() + " - Registration Confirmation for " + teamRegistration.getEvent().getTitle();
+
+            MailData mailData=new MailData(
+                    teamRegistration.getEmail(),
+                    subject,
+                    "team-registration",
+                    variables
+            );
+
+            redisTemplate.convertAndSend("mail",mailData);
+
             return new RegSuccess(registrationId, false, 0);
 
         } else {
+            //Non BGU team
             return new RegSuccess(registrationId, true, teamRegistration.getEvent().getAmount());
         }
     }
 
     private RegSuccess proceedSolo(String registrationId, SoloRegistration soloRegistration) {
         if (soloRegistration.getStudentType().equals(StudentType.BGU)) {
+            //BGU solo
             soloRepository.save(soloRegistration);
-            //send notification
+
+            //email notification
+            Map<String, Object> variables = new HashMap<>();
+            variables.put("studentName", soloRegistration.getName());
+            variables.put("eventTitle", soloRegistration.getEvent().getTitle());
+            variables.put("registrationId", registrationId);
+            variables.put("eventDateTime", soloRegistration.getEvent().getDateTime());
+            variables.put("coordinatorName", soloRegistration.getEvent().getCoordinatorName());
+            variables.put("coordinatorNumber", soloRegistration.getEvent().getCoordinatorNumber());
+
+            MailData mailData=new MailData(
+                    soloRegistration.getEmail(),
+                    "Registration Complete",
+                    "solo-registration",
+                    variables
+            );
+            redisTemplate.convertAndSend("mail",mailData);
+
             return new RegSuccess(registrationId, false, 0);
         } else {
+            //Non BGU solo
             return new RegSuccess(registrationId, true, soloRegistration.getEvent().getAmount());
         }
     }
@@ -176,13 +225,24 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
+        List<String> requestMemberMail = request.teamMembers().stream()
+                .map(TeamMember::getEmail)
+                .toList();
+
         for (TeamRegistration teamRegistration : teamRegistrations) {
+            //Check Team name
             if (teamRegistration.getTeamName().equals(request.teamName())) {
-                throw new RegistrationProcessingException("Team name " + request.teamName() + " already exists.");
+                throw new RegistrationProcessingException("Team name '" + request.teamName() + "' already exists.");
             }
 
             for (TeamMember member : teamRegistration.getTeamMembers()) {
-                if (request.teamMembers().contains(member.getEmail())) {
+                //Check request mail in other team member mail
+                if (requestMemberMail.contains(member.getEmail())) {
+                    throw new RegistrationProcessingException("Email " + member.getEmail() + " is already registered.");
+                }
+
+                //Check if leader email exist in other team or not
+                if(member.getEmail().equals(request.email())) {
                     throw new RegistrationProcessingException("Email " + member.getEmail() + " is already registered.");
                 }
             }
