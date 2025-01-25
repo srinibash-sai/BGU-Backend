@@ -2,17 +2,16 @@ package com.anup.bgu.registration.dto;
 
 import com.anup.bgu.registration.entities.TeamMember;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 import java.util.List;
 
 @NoArgsConstructor
 @Setter
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@ToString
 public class RegistrationResponse implements Serializable {
     private String id;
     private String name;
@@ -31,6 +30,7 @@ public class RegistrationResponse implements Serializable {
 
     @NoArgsConstructor
     @Setter
+    @Getter
     public static class Member implements Serializable {
         private String name;
         private String email;

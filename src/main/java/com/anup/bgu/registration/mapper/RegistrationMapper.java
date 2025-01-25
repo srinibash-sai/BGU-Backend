@@ -79,7 +79,7 @@ public class RegistrationMapper {
             log.info("toSoloListRegistrationResponse() -> for loop -> {}",soloRegistration.toString());
             registrationResponses.add(toSoloRegistrationResponse(soloRegistration));
         }
-        log.info("toSoloListRegistrationResponse() -> {}",registrationResponses.toString());
+        log.info("toSoloListRegistrationResponse() 82 -> {}",registrationResponses.toString());
         return registrationResponses;
     }
 

@@ -45,6 +45,7 @@ public class RegistrationController {
             @PathVariable("id") @NotEmpty String id
     ) {
         List<RegistrationResponse> allRegistration = registrationService.getAllRegistration(id);
+        log.info("getAllRegistration() -> {}",allRegistration.toString());
 
         return new ResponseEntity<>(allRegistration, HttpStatus.OK);
     }
