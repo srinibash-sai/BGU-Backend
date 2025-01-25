@@ -44,13 +44,14 @@ public class PaymentServiceImpl implements PaymentService {
             if (soloRegistration.getEvent().getAmount() != amount) {
                 throw new PaymentConflictException("Payment amount for " + soloRegistration.getEvent().getTitle() + " is " + soloRegistration.getEvent().getAmount());
             }
-            String pathToImage = imageService.saveImage(file, transactionId);
             Payment payment=Payment.builder()
                     .id(UUID.randomUUID().toString())
                     .transactionId(transactionId)
                     .amount(amount)
-                    .pathToScreenshot(pathToImage)
                     .build();
+
+            String pathToImage = imageService.savePaymentImage(file, soloRegistration.getEvent().getId(),payment.getId());
+            payment.setPathToScreenshot(pathToImage);
 
             soloRegistration.setPayment(payment);
 
@@ -63,13 +64,14 @@ public class PaymentServiceImpl implements PaymentService {
             if (teamRegistration.getEvent().getAmount() != amount) {
                 throw new PaymentConflictException("Payment amount for " + teamRegistration.getEvent().getTitle() + " is " + teamRegistration.getEvent().getAmount());
             }
-            String pathToImage = imageService.saveImage(file, transactionId);
             Payment payment=Payment.builder()
                     .id(UUID.randomUUID().toString())
                     .transactionId(transactionId)
                     .amount(amount)
-                    .pathToScreenshot(pathToImage)
                     .build();
+
+            String pathToImage = imageService.savePaymentImage(file, teamRegistration.getEvent().getId(),payment.getId());
+            payment.setPathToScreenshot(pathToImage);
 
             teamRegistration.setPayment(payment);
 

@@ -4,5 +4,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
     String saveImage(MultipartFile file, String EventId);
+
     byte[] getImage(String imagePath);
+
+    String savePaymentImage(MultipartFile file, String EventId, String paymentId);
 }

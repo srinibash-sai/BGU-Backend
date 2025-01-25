@@ -23,8 +23,7 @@ public class ImageServiceImpl implements ImageService {
     private final String eventPath = uploadPath + "EventPoster" + File.separator;
 
     @PostConstruct
-    void init()
-    {
+    void init() {
         creatFilePath(eventPath);
         creatFilePath(paymentsPath);
     }
@@ -48,21 +47,48 @@ public class ImageServiceImpl implements ImageService {
 
         final String newFileName = EventId + "." + extension;
         final String filePath = eventPath + newFileName;
-        log.debug("saveImage() -> filePath: {}",filePath);
+        log.debug("saveImage() -> filePath: {}", filePath);
 
-        saveFile(imageByte,filePath);
+        saveFile(imageByte, filePath);
 
         return filePath;
     }
 
     @Override
-    public byte[] getImage(String imagePath){
+    public byte[] getImage(String imagePath) {
         try {
             Path path = Paths.get(imagePath);
             return Files.readAllBytes(path);
         } catch (Exception e) {
             throw new InvalidImageException("Internal Server Error! Image does not exist.");
         }
+    }
+
+    @Override
+    public String savePaymentImage(MultipartFile file, String EventId, String paymentId) {
+        final String fileName = file.getOriginalFilename(); // get the current filename of image
+        final String extension = extractFileExtension(fileName);
+
+        log.debug("saveImage() -> extension: {}", extension);
+
+        validateFileExtension(extension);
+
+        byte[] imageByte;
+        try {
+            imageByte = file.getBytes();
+        } catch (IOException e) {
+            throw new InvalidImageException("Image Processing Error! Please Upload again.");
+        }
+
+        final String newFileName = paymentId + "." + extension;
+        creatFilePath(paymentsPath + EventId + File.separator);
+
+        final String filePath = paymentsPath + EventId + File.separator + newFileName;
+        log.debug("saveImage() -> filePath: {}", filePath);
+
+        saveFile(imageByte, filePath);
+
+        return filePath;
     }
 
     @Async
@@ -82,19 +108,16 @@ public class ImageServiceImpl implements ImageService {
         }
     }
 
-    private void validateFileExtension(String extension)
-    {
+    private void validateFileExtension(String extension) {
         if (!extension.equalsIgnoreCase("jpg")
                 && !extension.equalsIgnoreCase("png")
                 && !extension.equalsIgnoreCase("jpeg")
-        )
-        {
+        ) {
             throw new InvalidImageException("Invalid image Extensio! Only JPG, JPEG and PNG are allowed");
         }
     }
 
-    private String extractFileExtension(String fileName)
-    {
+    private String extractFileExtension(String fileName) {
         if (fileName == null) {
             throw new InvalidImageException("Invalid image! Can't detect file name.");
         }
