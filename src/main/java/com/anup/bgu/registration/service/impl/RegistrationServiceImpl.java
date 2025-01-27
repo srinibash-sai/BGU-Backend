@@ -192,6 +192,8 @@ public class RegistrationServiceImpl implements RegistrationService {
 
             return otpService.sendOtp(teamRegistration.getId(), teamRegistration.getEmail());
         } else {
+            if(request.collegeName()==null) throw new RegistrationProcessingException("Please Provide College name");
+
             TeamRegistration teamRegistration = TeamRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .leaderName(request.name())
@@ -265,6 +267,8 @@ public class RegistrationServiceImpl implements RegistrationService {
 
             return otpService.sendOtp(soloRegistration.getId(), soloRegistration.getEmail());
         } else {
+            if(request.collegeName()==null) throw new RegistrationProcessingException("Please Provide College name");
+
             SoloRegistration soloRegistration = SoloRegistration.builder()
                     .id(UUID.randomUUID().toString())
                     .name(request.name())

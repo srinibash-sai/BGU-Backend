@@ -27,6 +27,8 @@ secret:
   captcha-secret: Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b
   captcha-expiry: 300
   api-base-url: http://localhost:8080
+  admin-user: admin@spectosbgu.in
+  admin-password: password
 
 email-id:
   accounts:

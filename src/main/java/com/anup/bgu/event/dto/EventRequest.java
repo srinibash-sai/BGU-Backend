@@ -34,7 +34,7 @@ public record EventRequest(
         String coordinatorNumber,
 
         @Min(value = 0, message = "Minimum amount should be 0")
-        int amount,
+        Integer amount,
 
         @NotBlank(message = "Team Type is required")
         @Pattern(regexp = "^(SOLO|TEAM)$", message = "Please provide valid teamType")
@@ -44,9 +44,9 @@ public record EventRequest(
         String eventType,
 
         @Min(value = 2, message = "Minimum Team size should be 2")
-        int maxTeamSize,
+        Integer maxTeamSize,
 
         @Min(value = 2, message = "Minimum Team size should be 2")
-        int minTeamSize
+        Integer minTeamSize
 ) {
 }

@@ -35,9 +35,9 @@ public record EventUpdateRequest(
         String eventType,
 
         @Min(value = 2, message = "Minimum Team size should be 2")
-        int maxTeamSize,
+        Integer maxTeamSize,
 
         @Min(value = 2, message = "Minimum Team size should be 2")
-        int minTeamSize
+        Integer minTeamSize
 ) {
 }
