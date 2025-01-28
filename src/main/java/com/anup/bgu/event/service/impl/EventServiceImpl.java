@@ -8,6 +8,7 @@ import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.EventType;
 import com.anup.bgu.event.entities.Status;
 import com.anup.bgu.event.mapper.EventMapper;
+import com.anup.bgu.event.repo.EventCacheRepo;
 import com.anup.bgu.event.repo.EventRepository;
 import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.EventNotFoundException;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,6 +29,7 @@ public class EventServiceImpl implements EventService {
     private final ImageService imageService;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final EventCacheRepo eventCacheRepo;
 
     @Override
     public Event createEvent(EventRequest eventRequest) {
@@ -46,13 +49,13 @@ public class EventServiceImpl implements EventService {
                 .teamType(EventTeamType.valueOf(eventRequest.teamType()))
                 .build();
 
-        if(event.getTeamType().equals(EventTeamType.TEAM))
-        {
+        if (event.getTeamType().equals(EventTeamType.TEAM)) {
             event.setMinMember(eventRequest.minTeamSize());
             event.setMaxMember(eventRequest.maxTeamSize());
         }
 
         event = eventRepository.save(event);
+        eventCacheRepo.save(event);
 
         //send notification
 
@@ -62,41 +65,39 @@ public class EventServiceImpl implements EventService {
     @Override
     public Event updateEvent(String id, EventUpdateRequest request) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
 
-        if(request.title() != null) {
+        if (request.title() != null) {
             event.setTitle(request.title());
         }
-        if(request.description()!=null){
+        if (request.description() != null) {
             event.setDescription(request.description());
         }
-        if(request.status()!=null){
+        if (request.status() != null) {
             event.setStatus(Status.valueOf(request.status()));
-            if(event.getStatus().equals(Status.ONGOING))
-            {
+            if (event.getStatus().equals(Status.ONGOING)) {
                 //send notification
             }
-            if(event.getStatus().equals(Status.CLOSED))
-            {
+            if (event.getStatus().equals(Status.CLOSED)) {
                 //send notification
             }
         }
-        if(request.rules()!=null){
+        if (request.rules() != null) {
             event.setRules(request.rules());
         }
-        if(request.dateTime()!=null){
+        if (request.dateTime() != null) {
             event.setDateTime(request.dateTime());
         }
-        if(request.coordinatorName()!=null){
+        if (request.coordinatorName() != null) {
             event.setCoordinatorName(request.coordinatorName());
         }
-        if(request.coordinatorNumber()!=null){
+        if (request.coordinatorNumber() != null) {
             event.setCoordinatorNumber(request.coordinatorNumber());
         }
-        if(request.amount()!=null){
+        if (request.amount() != null) {
             event.setAmount(request.amount());
         }
-        if(request.teamType()!=null){
+        if (request.teamType() != null) {
             event.setTeamType(EventTeamType.valueOf(request.teamType()));
             if (request.teamType().equals("TEAM") && request.maxTeamSize() < request.minTeamSize()) {
                 throw new InvalidRequestException("Team events require at least minimum 2 or higher.");
@@ -108,17 +109,18 @@ public class EventServiceImpl implements EventService {
                 event.setMaxMember(0);
             }
         }
-        if(request.eventType()!=null){
+        if (request.eventType() != null) {
             event.setEventType(EventType.valueOf(request.eventType()));
         }
         event = eventRepository.save(event);
+        eventCacheRepo.save(event);
         return event;
     }
 
     @Override
     public Event deleteEvent(String id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
         eventRepository.delete(event);
         return event;
     }
@@ -126,20 +128,53 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<EventResponse> getAllEvents(String eventType, String status) {
         List<Event> events;
+        // Check the cache for events based on the provided filters
         if (eventType != null && status != null) {
-            events = eventRepository.findByEventTypeAndStatus(
+            // Try to fetch events by EventType and Status from cache
+            Optional<List<Event>> cachedEvents = eventCacheRepo.findByEventTypeAndStatus(
                     EventType.valueOf(eventType.toUpperCase()),
                     Status.valueOf(status.toUpperCase())
             );
+            if (cachedEvents.isPresent()) {
+                events = cachedEvents.get();
+            } else {
+                events = eventRepository.findByEventTypeAndStatus(
+                        EventType.valueOf(eventType.toUpperCase()),
+                        Status.valueOf(status.toUpperCase())
+                );
+                eventCacheRepo.saveAll(events);
+            }
         } else if (eventType != null) {
-            // If only eventType is provided, return all statuses for the given eventType
-            events = eventRepository.findByEventType(EventType.valueOf(eventType.toUpperCase()));
+            // Try to fetch events by EventType from cache
+            Optional<List<Event>> cachedEvents = eventCacheRepo.findByEventType(
+                    EventType.valueOf(eventType.toUpperCase())
+            );
+            if (cachedEvents.isPresent()) {
+                events = cachedEvents.get();
+            } else {
+                events = eventRepository.findByEventType(EventType.valueOf(eventType.toUpperCase()));
+                eventCacheRepo.saveAll(events);
+            }
         } else if (status != null) {
-            // If only status is provided, return all event types for the given status
-            events = eventRepository.findByStatus(Status.valueOf(status.toUpperCase()));
+            // Try to fetch events by Status from cache
+            Optional<List<Event>> cachedEvents = eventCacheRepo.findByStatus(
+                    Status.valueOf(status.toUpperCase())
+            );
+            if (cachedEvents.isPresent()) {
+                events = cachedEvents.get();
+            } else {
+                events = eventRepository.findByStatus(Status.valueOf(status.toUpperCase()));
+                eventCacheRepo.saveAll(events);
+            }
         } else {
-            // If neither parameter is provided, return all events
-            events = eventRepository.findAll();
+            // Try to fetch all events from cache
+            Optional<List<Event>> cachedEvents = eventCacheRepo.findAll();
+            if (cachedEvents.isPresent()) {
+                events = cachedEvents.get();
+            } else {
+                events = eventRepository.findAll();
+                eventCacheRepo.saveAll(events);
+            }
         }
 
         // Map events to EventResponse DTOs
@@ -148,8 +183,15 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public Event getEventById(String id) {
-        return eventRepository.findById(id)
-                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+        Optional<Event> cachedEvent = eventCacheRepo.findById(id);
+
+        if (cachedEvent.isPresent()) return cachedEvent.get();
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + " does not exist!"));
+
+        eventCacheRepo.save(event);
+        return event;
     }
 
     @Override
@@ -161,10 +203,11 @@ public class EventServiceImpl implements EventService {
     @Override
     public String updateEventImage(String id, MultipartFile file) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
         String imagePath = imageService.saveImage(file, id);
         event.setPathToImage(imagePath);
         eventRepository.save(event);
+        eventCacheRepo.save(event);
         return imagePath;
     }
 
@@ -173,6 +216,7 @@ public class EventServiceImpl implements EventService {
         eventRepository.findById(id).ifPresent(e -> {
             e.setCurrentRegistration(e.getCurrentRegistration() + 1);
             eventRepository.save(e);
+            eventCacheRepo.save(e);
         });
     }
 }
