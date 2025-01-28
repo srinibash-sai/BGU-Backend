@@ -1,6 +1,8 @@
 package com.anup.bgu.payments.service.impl;
 
 import com.anup.bgu.event.entities.Event;
+import com.anup.bgu.event.repo.EventRepository;
+import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.PaymentConflictException;
 import com.anup.bgu.image.service.ImageService;
 import com.anup.bgu.mail.dto.MailData;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -33,8 +36,10 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final ImageService imageService;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final EventService eventService;
 
     @Override
+    @Transactional
     public Payment addPayment(MultipartFile file, String transactionId, Integer amount, String registrationId) {
 
         validateIfTransactionIdExists(transactionId);
@@ -60,6 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
             soloRegistration.setPayment(payment);
 
             soloRepository.save(soloRegistration);
+            eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -98,6 +104,7 @@ public class PaymentServiceImpl implements PaymentService {
             teamRegistration.setPayment(payment);
 
             teamRepository.save(teamRegistration);
+            eventService.increaseRegistrationCount(teamRegistration.getEvent().getId());
 
             //email notification
             Map<String, Object> variables = new HashMap<>();

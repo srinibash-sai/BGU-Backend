@@ -18,10 +18,13 @@ import com.anup.bgu.registration.repo.RegistrationCacheRepo;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import com.anup.bgu.registration.service.RegistrationService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,7 +34,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RegistrationServiceImpl implements RegistrationService {
 
-    public static final String BGU_MAIL_DOMAIN = "bgu.ac.in";
+    @Value("${secret.bgu-mail-domain}")
+    private String BGU_MAIL_DOMAIN;
+
     private final EventService eventService;
     private final SoloRegistrationRepository soloRepository;
     private final TeamRegistrationRepository teamRepository;
@@ -40,6 +45,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationMapper registrationMapper;
     private final RedisTemplate<String, Object> redisTemplate;
 
+    @PostConstruct
+    void vjhv(){
+        log.info(BGU_MAIL_DOMAIN);
+    }
 
     @Override
     public OtpResponse register(String eventId, RegistrationRequest request) {
@@ -85,23 +94,26 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Override
     public List<RegistrationResponse> getAllRegistration(String eventId) {
         Event event = eventService.getEventById(eventId);
-        log.info("getAllRegistration() -> {}",event);
+        log.info("getAllRegistration() -> {}", event);
 
         if (event.getTeamType().equals(EventTeamType.SOLO)) {
             List<SoloRegistration> soloRegistrations = soloRepository.findAllByEvent(event);
-            log.info("getAllRegistration() -> {}",soloRegistrations);
+            log.info("getAllRegistration() -> {}", soloRegistrations);
             return registrationMapper.toSoloListRegistrationResponse(soloRegistrations);
         } else {
             List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
-            log.info("getAllRegistration() -> {}",teamRegistrations);
+            log.info("getAllRegistration() -> {}", teamRegistrations);
             return registrationMapper.toTeamListRegistrationResponse(teamRegistrations);
         }
     }
 
+    @Transactional
     private RegSuccess proceedTeam(String registrationId, TeamRegistration teamRegistration) {
         if (teamRegistration.getStudentType().equals(StudentType.BGU)) {
             //BGU team
             teamRepository.save(teamRegistration);
+            eventService.increaseRegistrationCount(teamRegistration.getEvent().getId());
+
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -119,14 +131,14 @@ public class RegistrationServiceImpl implements RegistrationService {
 
             String subject = "Team " + teamRegistration.getTeamName() + " - Registration Confirmation for " + teamRegistration.getEvent().getTitle();
 
-            MailData mailData=new MailData(
+            MailData mailData = new MailData(
                     teamRegistration.getEmail(),
                     subject,
                     "team-registration",
                     variables
             );
 
-            redisTemplate.convertAndSend("mail",mailData);
+            redisTemplate.convertAndSend("mail", mailData);
 
             return new RegSuccess(registrationId, false, 0);
 
@@ -136,10 +148,12 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 
+    @Transactional
     private RegSuccess proceedSolo(String registrationId, SoloRegistration soloRegistration) {
         if (soloRegistration.getStudentType().equals(StudentType.BGU)) {
             //BGU solo
             soloRepository.save(soloRegistration);
+            eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -150,13 +164,13 @@ public class RegistrationServiceImpl implements RegistrationService {
             variables.put("coordinatorName", soloRegistration.getEvent().getCoordinatorName());
             variables.put("coordinatorNumber", soloRegistration.getEvent().getCoordinatorNumber());
 
-            MailData mailData=new MailData(
+            MailData mailData = new MailData(
                     soloRegistration.getEmail(),
                     "Registration Complete",
                     "solo-registration",
                     variables
             );
-            redisTemplate.convertAndSend("mail",mailData);
+            redisTemplate.convertAndSend("mail", mailData);
 
             return new RegSuccess(registrationId, false, 0);
         } else {
@@ -192,7 +206,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
             return otpService.sendOtp(teamRegistration.getId(), teamRegistration.getEmail());
         } else {
-            if(request.collegeName()==null) throw new RegistrationProcessingException("Please Provide College name");
+            if (request.collegeName() == null) throw new RegistrationProcessingException("Please Provide College name");
 
             TeamRegistration teamRegistration = TeamRegistration.builder()
                     .id(UUID.randomUUID().toString())
@@ -244,7 +258,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 }
 
                 //Check if leader email exist in other team or not
-                if(member.getEmail().equals(request.email())) {
+                if (member.getEmail().equals(request.email())) {
                     throw new RegistrationProcessingException("Email " + member.getEmail() + " is already registered.");
                 }
             }
@@ -267,7 +281,7 @@ public class RegistrationServiceImpl implements RegistrationService {
 
             return otpService.sendOtp(soloRegistration.getId(), soloRegistration.getEmail());
         } else {
-            if(request.collegeName()==null) throw new RegistrationProcessingException("Please Provide College name");
+            if (request.collegeName() == null) throw new RegistrationProcessingException("Please Provide College name");
 
             SoloRegistration soloRegistration = SoloRegistration.builder()
                     .id(UUID.randomUUID().toString())

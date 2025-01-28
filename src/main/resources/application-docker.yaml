@@ -32,6 +32,7 @@ secret:
   api-base-url: http://localhost:8080
   admin-user: admin@spectosbgu.in
   admin-password: password
+  bgu-mail-domain: giet.edu
 
 email-id:
   accounts:

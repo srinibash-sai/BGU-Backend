@@ -116,6 +116,14 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public Event deleteEvent(String id) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(()->new EventNotFoundException("Event id: " + id + "does not exist!"));
+        eventRepository.delete(event);
+        return event;
+    }
+
+    @Override
     public List<EventResponse> getAllEvents(String eventType, String status) {
         List<Event> events;
         if (eventType != null && status != null) {
@@ -158,5 +166,13 @@ public class EventServiceImpl implements EventService {
         event.setPathToImage(imagePath);
         eventRepository.save(event);
         return imagePath;
+    }
+
+    @Override
+    public void increaseRegistrationCount(String id) {
+        eventRepository.findById(id).ifPresent(e -> {
+            e.setCurrentRegistration(e.getCurrentRegistration() + 1);
+            eventRepository.save(e);
+        });
     }
 }
