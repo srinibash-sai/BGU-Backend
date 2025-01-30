@@ -35,3 +35,5 @@ email-id:
   accounts:
     - email: ${EMAIL}
       password: ${PASSWORD}
+    - email: ${EMAIL2}
+      password: ${PASSWORD2}

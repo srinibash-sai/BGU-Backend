@@ -14,6 +14,7 @@ import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.EventNotFoundException;
 import com.anup.bgu.exceptions.models.InvalidRequestException;
 import com.anup.bgu.image.service.ImageService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

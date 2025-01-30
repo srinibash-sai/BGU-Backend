@@ -20,7 +20,7 @@ public class EventCacheRepoImpl implements EventCacheRepo {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final String HASH_KEY = "EVENT_CACHE";
-    private final Duration timeToLive = Duration.ofMinutes(5);
+    private final Duration timeToLive = Duration.ofMinutes(10);
 
     @Override
     public Event save(Event event) {
