@@ -84,9 +84,13 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         if (soloRegistrationOptional.isPresent()) {
             SoloRegistration soloRegistration = soloRegistrationOptional.get();
+            soloRegistration.setEmailVerified(true);
+            registrationCacheRepo.save(soloRegistration);
             return proceedSolo(registrationId, soloRegistration);
         } else {
             TeamRegistration teamRegistration = teamRegistrationOptional.get();
+            teamRegistration.setEmailVerified(true);
+            registrationCacheRepo.save(teamRegistration);
             return proceedTeam(registrationId, teamRegistration);
         }
     }
@@ -192,6 +196,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .gender(Gender.valueOf(request.gender()))
                     .event(event)
                     .collegeName("Birla Global University")
+                    .emailVerified(false)
                     .build();
 
             if (request.teamMembers() != null) {
@@ -218,6 +223,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .gender(Gender.valueOf(request.gender()))
                     .event(event)
                     .collegeName(request.collegeName())
+                    .emailVerified(false)
                     .build();
 
             if (request.teamMembers() != null) {
@@ -276,6 +282,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .gender(Gender.valueOf(request.gender()))
                     .event(event)
                     .collegeName("Birla Global University")
+                    .emailVerified(false)
                     .build();
             soloRegistration = registrationCacheRepo.save(soloRegistration);
 
@@ -292,6 +299,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .gender(Gender.valueOf(request.gender()))
                     .event(event)
                     .collegeName(request.collegeName())
+                    .emailVerified(false)
                     .build();
             soloRegistration = registrationCacheRepo.save(soloRegistration);
 

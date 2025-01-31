@@ -24,7 +24,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping
-    public ResponseEntity<Payment> addPayment(
+    public ResponseEntity<Void> addPayment(
             @RequestParam(value = "file", required = true)
             @Valid
             @NotNull
@@ -40,8 +40,8 @@ public class PaymentController {
             @RequestParam(value = "registrationId", required = true)
             String registrationId
     ) {
-        Payment payment = paymentService.addPayment(file, transactionId, amount, registrationId);
-        return new ResponseEntity<>(payment,HttpStatus.OK);
+        paymentService.addPayment(file, transactionId, amount, registrationId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/image/{id}")

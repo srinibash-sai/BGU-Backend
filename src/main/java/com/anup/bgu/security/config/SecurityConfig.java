@@ -1,6 +1,7 @@
 package com.anup.bgu.security.config;
 
 import com.anup.bgu.security.filter.JwtFilter;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class SecurityConfig {
@@ -27,6 +30,8 @@ public class SecurityConfig {
     private String ADMIN_USERNAME;
     @Value("${secret.admin-password}")
     private String ADMIN_PASSWORD;
+    @Value("${secret.cors}")
+    private String[] cors;
 
     @Bean
     SecurityFilterChain securityFilterChain(
@@ -48,6 +53,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/events/register/{id}",
                                 "/events/verifyotp").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/feedback").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
@@ -71,5 +78,20 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception {
         return builder.getAuthenticationManager();
+    }
+
+    @Bean
+    WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(@NonNull CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins(cors)
+                        .allowCredentials(true)
+                        .allowedHeaders("*")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE");
+
+            }
+        };
     }
 }

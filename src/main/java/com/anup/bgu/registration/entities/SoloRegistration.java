@@ -55,4 +55,7 @@ public class SoloRegistration implements Serializable {
 
     @Column(nullable = false, length = 100)
     private String collegeName;
+
+    @Transient
+    private Boolean emailVerified;
 }

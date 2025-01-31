@@ -3,7 +3,9 @@ package com.anup.bgu.payments.service.impl;
 import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.event.repo.EventRepository;
 import com.anup.bgu.event.service.EventService;
+import com.anup.bgu.exceptions.models.EmailNotVerifiedException;
 import com.anup.bgu.exceptions.models.PaymentConflictException;
+import com.anup.bgu.exceptions.models.RegistrationNotFoundException;
 import com.anup.bgu.image.service.ImageService;
 import com.anup.bgu.mail.dto.MailData;
 import com.anup.bgu.payments.entities.Payment;
@@ -40,9 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public Payment addPayment(MultipartFile file, String transactionId, Integer amount, String registrationId) {
-
-        validateIfTransactionIdExists(transactionId);
+    public void addPayment(MultipartFile file, String transactionId, Integer amount, String registrationId) {
 
         Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);
         Optional<TeamRegistration> teamRegistrationOptional = registrationCacheRepo.findTeamRegistrationById(registrationId);
@@ -50,9 +50,18 @@ public class PaymentServiceImpl implements PaymentService {
         if (soloRegistrationOptional.isPresent()) {
             //do solo
             SoloRegistration soloRegistration = soloRegistrationOptional.get();
+            validateIfTransactionIdExists(transactionId);
+
+            if(!soloRegistration.getEmailVerified()){
+                log.info("addPayment()-> Email Unverified!... {}",soloRegistration.toString());
+                throw new EmailNotVerifiedException("Email not verified! Please verify using OTP.");
+            }
+
             if (soloRegistration.getEvent().getAmount() != amount) {
+                log.info("addPayment()-> Not equal payment amount!... {}",soloRegistration.toString());
                 throw new PaymentConflictException("Payment amount for " + soloRegistration.getEvent().getTitle() + " is " + soloRegistration.getEvent().getAmount());
             }
+
             Payment payment=Payment.builder()
                     .id(UUID.randomUUID().toString())
                     .transactionId(transactionId)
@@ -60,11 +69,15 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
 
             String pathToImage = imageService.savePaymentImage(file, soloRegistration.getEvent().getId(),payment.getId());
+            log.info("addPayment()-> Path to payment:{}",pathToImage);
             payment.setPathToScreenshot(pathToImage);
+
+            log.info("addPayment()-> Payment: {}", payment.toString());
 
             soloRegistration.setPayment(payment);
 
             soloRepository.save(soloRegistration);
+            log.info("addPayment()->Solo Registration saved : {}",soloRegistration);
             eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
 
             //email notification
@@ -88,6 +101,11 @@ public class PaymentServiceImpl implements PaymentService {
         else if(teamRegistrationOptional.isPresent()) {
             //do team
             TeamRegistration teamRegistration = teamRegistrationOptional.get();
+            validateIfTransactionIdExists(transactionId);
+
+            if(!teamRegistration.getEmailVerified()){
+                throw new EmailNotVerifiedException("Email not verified! Please verify using OTP.");
+            }
 
             if (teamRegistration.getEvent().getAmount() != amount) {
                 throw new PaymentConflictException("Payment amount for " + teamRegistration.getEvent().getTitle() + " is " + teamRegistration.getEvent().getAmount());
@@ -131,8 +149,9 @@ public class PaymentServiceImpl implements PaymentService {
 
             redisTemplate.convertAndSend("mail",mailData);
         }
-
-        return null;
+        else {
+            throw new RegistrationNotFoundException("Registration Timeout! Please register again.");
+        }
     }
 
     @Override
