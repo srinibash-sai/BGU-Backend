@@ -26,6 +26,11 @@ public class OtpCacheRepositoryImpl implements OtpCacheRepository {
     }
 
     @Override
+    public void delete(OtpCache otpCache) {
+        redisTemplate.opsForHash().delete(HASH_KEY, otpCache.getRegistrationId());
+    }
+
+    @Override
     public Optional<OtpCache> findById(String registrationId) {
         Object o = redisTemplate.opsForHash().get(HASH_KEY, registrationId);
         if(o==null)

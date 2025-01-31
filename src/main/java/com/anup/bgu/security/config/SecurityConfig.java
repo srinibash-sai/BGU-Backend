@@ -55,6 +55,8 @@ public class SecurityConfig {
                                 "/events/verifyotp").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/feedback").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/notice").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

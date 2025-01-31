@@ -1,12 +1,12 @@
 spring:
   servlet:
     multipart:
-      max-file-size: 2MB
+      max-file-size: 3MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://mysql:3306/bgu
-    username: user
-    password: pass
+    username: ${DB_USER:user}
+    password: ${DB_PASSWORD:pass}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
@@ -25,14 +25,14 @@ spring:
       password: pass
 
 secret:
-  key: vR4cTn8gWpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1bFj7YtAqE3rPzLwWbJkKr5iShzO2vTg9Q4pFz0KmXtN6V7eYd
-  cors: http://localhost:3000
-  captcha-secret: Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b
+  key: ${JWT_SECRET:vR4cTn8gWpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1bFj7YtAqE3rPzLwWbJkKr5iShzO2vTg9Q4pFz0KmXtN6V7eYd}
+  cors: ${CORS:http://localhost:5173}
+  captcha-secret: ${CAPTCHA_SECRET:Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b}
   captcha-expiry: 300
-  api-base-url: http://localhost:8080
-  admin-user: admin@spectosbgu.in
-  admin-password: password
-  bgu-mail-domain: bgu.ac.in
+  api-base-url: ${API_BASE_URL:http://localhost:8080}
+  admin-user: ${ADMIN_USER:admin@spectosbgu.in}
+  admin-password: ${ADMIN_PASSWORD:password}
+  bgu-mail-domain: ${BGU_MAIL_DOMAIN:bgu.ac.in}
 
 email-id:
   accounts:

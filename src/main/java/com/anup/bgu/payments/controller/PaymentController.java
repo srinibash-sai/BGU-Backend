@@ -35,7 +35,7 @@ public class PaymentController {
             String transactionId,
 
             @RequestParam(value = "amount", required = true)
-            Integer amount,
+            String amount,
 
             @RequestParam(value = "registrationId", required = true)
             String registrationId

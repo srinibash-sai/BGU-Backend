@@ -42,10 +42,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public void addPayment(MultipartFile file, String transactionId, Integer amount, String registrationId) {
+    public void addPayment(MultipartFile file, String transactionId, String amountStr, String registrationId) {
 
         Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);
         Optional<TeamRegistration> teamRegistrationOptional = registrationCacheRepo.findTeamRegistrationById(registrationId);
+        int amount= (int) Math.round(Double.parseDouble(amountStr));
 
         if (soloRegistrationOptional.isPresent()) {
             //do solo
@@ -79,6 +80,7 @@ public class PaymentServiceImpl implements PaymentService {
             soloRepository.save(soloRegistration);
             log.info("addPayment()->Solo Registration saved : {}",soloRegistration);
             eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
+            registrationCacheRepo.delete(soloRegistration);
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -123,6 +125,7 @@ public class PaymentServiceImpl implements PaymentService {
 
             teamRepository.save(teamRegistration);
             eventService.increaseRegistrationCount(teamRegistration.getEvent().getId());
+            registrationCacheRepo.delete(teamRegistration);
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -168,7 +171,7 @@ public class PaymentServiceImpl implements PaymentService {
     private void validateIfTransactionIdExists(String transactionId) {
         Optional<Payment> optionalPayment = paymentRepository.findByTransactionId(transactionId);
         if (optionalPayment.isPresent()) {
-            throw new PaymentConflictException("This transaction id " + transactionId + " already exists.");
+            throw new PaymentConflictException("The transaction id " + transactionId + " already exists.");
         }
     }
 }

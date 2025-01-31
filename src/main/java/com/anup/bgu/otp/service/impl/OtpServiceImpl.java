@@ -2,7 +2,6 @@ package com.anup.bgu.otp.service.impl;
 
 import com.anup.bgu.exceptions.models.BadOtpException;
 import com.anup.bgu.mail.dto.MailData;
-import com.anup.bgu.mail.service.EmailService;
 import com.anup.bgu.otp.dto.OtpResponse;
 import com.anup.bgu.otp.entities.OtpCache;
 import com.anup.bgu.otp.repo.OtpCacheRepository;
@@ -39,7 +38,7 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public OtpResponse sendOtp(String registrationId, String email) {
         String otp = generateOTP();
-        OtpCache otpCache=OtpCache.builder()
+        OtpCache otpCache = OtpCache.builder()
                 .registrationId(registrationId)
                 .otp(otp)
                 .email(email)
@@ -50,14 +49,14 @@ public class OtpServiceImpl implements OtpService {
         Map<String, Object> variables = new HashMap<>();
         variables.put("otp", otp);
 
-        MailData mailData=new MailData(
+        MailData mailData = new MailData(
                 email,
                 "OTP Verification",
                 "otp-template",
                 variables
         );
 
-        redisTemplate.convertAndSend("mail",mailData);
+        redisTemplate.convertAndSend("mail", mailData);
 
         return new OtpResponse(registrationId);
     }
@@ -65,14 +64,13 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public void verifyOtp(String registrationId, String otp) {
         Optional<OtpCache> otpCacheOptional = otpCacheRepository.findById(registrationId);
-        if(otpCacheOptional.isEmpty())
-        {
-            throw new BadOtpException("Otp Expired");
+        if (otpCacheOptional.isEmpty()) {
+            throw new BadOtpException("Otp Expired! Please try again.");
         }
-        OtpCache otpCache=otpCacheOptional.get();
-        if(!otpCache.getOtp().equals(otp))
-        {
-            throw new BadOtpException("Otp Not match");
+        OtpCache otpCache = otpCacheOptional.get();
+        if (!otpCache.getOtp().equals(otp)) {
+            throw new BadOtpException("Otp Not match! Please try again.");
         }
+        otpCacheRepository.delete(otpCache);
     }
 }

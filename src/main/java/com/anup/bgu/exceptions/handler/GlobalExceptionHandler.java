@@ -93,6 +93,13 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(HttpStatus.NOT_FOUND.toString(), ex.getMessage()));
     }
 
+    @ExceptionHandler(BadCredentialException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialException(BadCredentialException ex) {
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.toString(), ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(Exception e) {
         log.warn("handleRuntimeException() -> exception: {}",e.getMessage(), e);

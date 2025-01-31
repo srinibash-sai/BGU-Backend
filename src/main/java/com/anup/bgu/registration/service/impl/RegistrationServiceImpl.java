@@ -117,7 +117,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             //BGU team
             teamRepository.save(teamRegistration);
             eventService.increaseRegistrationCount(teamRegistration.getEvent().getId());
-
+            registrationCacheRepo.delete(teamRegistration);
 
             //email notification
             Map<String, Object> variables = new HashMap<>();
@@ -158,6 +158,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             //BGU solo
             soloRepository.save(soloRegistration);
             eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
+            registrationCacheRepo.delete(soloRegistration);
 
             //email notification
             Map<String, Object> variables = new HashMap<>();

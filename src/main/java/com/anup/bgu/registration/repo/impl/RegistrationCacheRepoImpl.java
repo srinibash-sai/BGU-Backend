@@ -36,6 +36,18 @@ public class RegistrationCacheRepoImpl implements RegistrationCacheRepo {
     }
 
     @Override
+    public SoloRegistration delete(SoloRegistration soloRegistration) {
+        redisTemplate.opsForHash().delete(HASH_KEY_SOLO, soloRegistration.getId());
+        return soloRegistration;
+    }
+
+    @Override
+    public TeamRegistration delete(TeamRegistration teamRegistration) {
+        redisTemplate.opsForHash().delete(HASH_KEY_TEAM, teamRegistration.getId());
+        return teamRegistration;
+    }
+
+    @Override
     public Optional<SoloRegistration> findSoloRegistrationById(String id) {
         Object o = redisTemplate.opsForHash().get(HASH_KEY_SOLO, id);
         if(o==null)
