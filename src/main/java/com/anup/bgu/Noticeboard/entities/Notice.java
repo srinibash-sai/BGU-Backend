@@ -4,20 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Date;
+
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor@Getter
 @Setter
 @Builder
-public class Notice {
+public class Notice implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(length = 500,nullable = false)
     private String notice;
 
-    private String expire;
-
+    @Column(nullable = false)
+    private LocalDateTime expire;
 }

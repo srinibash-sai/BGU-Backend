@@ -46,7 +46,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @PostConstruct
-    void vjhv(){
+    void vjhv() {
         log.info(BGU_MAIL_DOMAIN);
     }
 
@@ -251,6 +251,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<String> requestMemberMail = request.teamMembers().stream()
                 .map(TeamMember::getEmail)
                 .toList();
+
+        if (request.email().endsWith(BGU_MAIL_DOMAIN))
+            for (String email : requestMemberMail)
+                if (!email.endsWith(BGU_MAIL_DOMAIN))
+                    throw new RegistrationProcessingException(email + " is not a BGU email!");
 
         for (TeamRegistration teamRegistration : teamRegistrations) {
             //Check Team name

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 
 public record NoticeRequest(
         @NotBlank(message = "Notice is a required field.")
-        @Size(max = 500, min = 50, message = "Notice must be in between 50-500 characters.")
+        @Size(max = 500, message = "Maximum Notice length is 500 characters.")
         String notice,
 
         @NotBlank(message = "Expiration is a required field.")
