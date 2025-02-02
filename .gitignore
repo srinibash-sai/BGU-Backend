@@ -35,4 +35,5 @@ build/
 
 Docker/
 uploads/
+logs/
 push.bat

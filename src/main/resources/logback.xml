@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.html.HTMLLayout">
+                <timeZone>Asia/Kolkata</timeZone>
+                <pattern>%d{HH:mm:ss.SSS}%thread%5level%logger{36}%message</pattern>
+            </layout>
+        </encoder>
+        <file>./logs/app/BGU.html</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>./logs/app/archive/%d{dd-MM-yyyy}/BGU.%i.html</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="ASYNC_APP" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>5000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="APP"/>
+    </appender>
+
+    <appender name="SERVER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="ch.qos.logback.classic.html.HTMLLayout">
+                <timeZone>Asia/Kolkata</timeZone>
+                <pattern>%d{HH:mm:ss}%thread%5level%logger{36}%message</pattern>
+            </layout>
+        </encoder>
+        <file>./logs/server/tomcat.html</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>./logs/server/archive/%d{dd-MM-yyyy}/tomcat.%i.html</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="com.anup.bgu" level="DEBUG">
+        <appender-ref ref="ASYNC_APP"/>
+    </logger>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <logger name="org.springframework.boot.web" level="DEBUG">
+        <appender-ref ref="SERVER"/>
+    </logger>
+    <logger name="org.springframework.web" level="DEBUG">
+        <appender-ref ref="SERVER"/>
+    </logger>
+</configuration>

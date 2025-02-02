@@ -46,39 +46,39 @@ public class PaymentServiceImpl implements PaymentService {
 
         Optional<SoloRegistration> soloRegistrationOptional = registrationCacheRepo.findSoloRegistrationById(registrationId);
         Optional<TeamRegistration> teamRegistrationOptional = registrationCacheRepo.findTeamRegistrationById(registrationId);
-        int amount= (int) Math.round(Double.parseDouble(amountStr));
+        int amount = (int) Math.round(Double.parseDouble(amountStr));
 
         if (soloRegistrationOptional.isPresent()) {
             //do solo
             SoloRegistration soloRegistration = soloRegistrationOptional.get();
             validateIfTransactionIdExists(transactionId);
 
-            if(!soloRegistration.getEmailVerified()){
-                log.info("addPayment()-> Email Unverified!... {}",soloRegistration.toString());
+            if (!soloRegistration.getEmailVerified()) {
+                log.debug("addPayment()-> Email Unverified!... {}", soloRegistration.toString());
                 throw new EmailNotVerifiedException("Email not verified! Please verify using OTP.");
             }
 
             if (soloRegistration.getEvent().getAmount() != amount) {
-                log.info("addPayment()-> Not equal payment amount!... {}",soloRegistration.toString());
+                log.debug("addPayment()-> Not equal payment amount!... {}", soloRegistration.toString());
                 throw new PaymentConflictException("Payment amount for " + soloRegistration.getEvent().getTitle() + " is " + soloRegistration.getEvent().getAmount());
             }
 
-            Payment payment=Payment.builder()
+            Payment payment = Payment.builder()
                     .id(UUID.randomUUID().toString())
                     .transactionId(transactionId)
                     .amount(amount)
                     .build();
 
-            String pathToImage = imageService.savePaymentImage(file, soloRegistration.getEvent().getId(),payment.getId());
-            log.info("addPayment()-> Path to payment:{}",pathToImage);
+            String pathToImage = imageService.savePaymentImage(file, soloRegistration.getEvent().getId(), payment.getId());
+            log.debug("addPayment()-> Path to payment:{}", pathToImage);
             payment.setPathToScreenshot(pathToImage);
 
-            log.info("addPayment()-> Payment: {}", payment.toString());
+            log.debug("addPayment()-> Payment: {}", payment.toString());
 
             soloRegistration.setPayment(payment);
 
             soloRepository.save(soloRegistration);
-            log.info("addPayment()->Solo Registration saved : {}",soloRegistration);
+            log.debug("addPayment()->Solo Registration saved : {}", soloRegistration);
             eventService.increaseRegistrationCount(soloRegistration.getEvent().getId());
             registrationCacheRepo.delete(soloRegistration);
 
@@ -91,39 +91,45 @@ public class PaymentServiceImpl implements PaymentService {
             variables.put("coordinatorName", soloRegistration.getEvent().getCoordinatorName());
             variables.put("coordinatorNumber", soloRegistration.getEvent().getCoordinatorNumber());
 
-            MailData mailData=new MailData(
+            MailData mailData = new MailData(
                     soloRegistration.getEmail(),
                     "Registration Complete",
                     "solo-registration",
                     variables
             );
-            redisTemplate.convertAndSend("mail",mailData);
+            redisTemplate.convertAndSend("mail", mailData);
 
-        }
-        else if(teamRegistrationOptional.isPresent()) {
+        } else if (teamRegistrationOptional.isPresent()) {
             //do team
             TeamRegistration teamRegistration = teamRegistrationOptional.get();
             validateIfTransactionIdExists(transactionId);
 
-            if(!teamRegistration.getEmailVerified()){
+            if (!teamRegistration.getEmailVerified()) {
+                log.debug("addPayment()-> Email Unverified!.. {}", teamRegistration.toString());
                 throw new EmailNotVerifiedException("Email not verified! Please verify using OTP.");
             }
 
             if (teamRegistration.getEvent().getAmount() != amount) {
+                log.debug("addPayment()-> Not equal payment amount!.. {}", teamRegistration.toString());
                 throw new PaymentConflictException("Payment amount for " + teamRegistration.getEvent().getTitle() + " is " + teamRegistration.getEvent().getAmount());
             }
-            Payment payment=Payment.builder()
+            Payment payment = Payment.builder()
                     .id(UUID.randomUUID().toString())
                     .transactionId(transactionId)
                     .amount(amount)
                     .build();
 
-            String pathToImage = imageService.savePaymentImage(file, teamRegistration.getEvent().getId(),payment.getId());
+            String pathToImage = imageService.savePaymentImage(file, teamRegistration.getEvent().getId(), payment.getId());
+            log.debug("addPayment()-> Path to payment:{}", pathToImage);
             payment.setPathToScreenshot(pathToImage);
+
+            log.debug("addPayment()-> Payment: {}", payment.toString());
+
 
             teamRegistration.setPayment(payment);
 
             teamRepository.save(teamRegistration);
+            log.debug("addPayment()->Team Registration saved : {}", teamRegistration);
             eventService.increaseRegistrationCount(teamRegistration.getEvent().getId());
             registrationCacheRepo.delete(teamRegistration);
 
@@ -143,16 +149,15 @@ public class PaymentServiceImpl implements PaymentService {
 
             String subject = "Team " + teamRegistration.getTeamName() + " - Registration Confirmation for " + teamRegistration.getEvent().getTitle();
 
-            MailData mailData=new MailData(
+            MailData mailData = new MailData(
                     teamRegistration.getEmail(),
                     subject,
                     "team-registration",
                     variables
             );
 
-            redisTemplate.convertAndSend("mail",mailData);
-        }
-        else {
+            redisTemplate.convertAndSend("mail", mailData);
+        } else {
             throw new RegistrationNotFoundException("Registration Timeout! Please register again.");
         }
     }
@@ -161,9 +166,10 @@ public class PaymentServiceImpl implements PaymentService {
     public byte[] getPaymentImage(String id) {
         Optional<Payment> optionalPayment = paymentRepository.findById(id);
         if (optionalPayment.isEmpty()) {
+            log.warn("getPaymentImage()-> Screenshot Not exist! ID:{} ",id);
             throw new PaymentConflictException("Screenshot Not exist!");
         }
-        Payment payment=optionalPayment.get();
+        Payment payment = optionalPayment.get();
 
         return imageService.getImage(payment.getPathToScreenshot());
     }
@@ -171,6 +177,7 @@ public class PaymentServiceImpl implements PaymentService {
     private void validateIfTransactionIdExists(String transactionId) {
         Optional<Payment> optionalPayment = paymentRepository.findByTransactionId(transactionId);
         if (optionalPayment.isPresent()) {
+            log.warn("validateIfTransactionIdExists()-> Dublicate Transaction! Transaction ID:{} ",transactionId);
             throw new PaymentConflictException("The transaction id " + transactionId + " already exists.");
         }
     }

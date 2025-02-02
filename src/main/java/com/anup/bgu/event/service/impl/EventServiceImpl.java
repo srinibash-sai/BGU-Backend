@@ -14,8 +14,8 @@ import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.EventNotFoundException;
 import com.anup.bgu.exceptions.models.InvalidRequestException;
 import com.anup.bgu.image.service.ImageService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +25,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EventServiceImpl implements EventService {
 
     private final ImageService imageService;
@@ -56,7 +57,9 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
+        log.info("createEvent()-> New event Created! {}", event);
         eventCacheRepo.save(event);
+        log.info("createEvent()-> Event Saved! {}", event.getId());
 
         //send notification
 
@@ -113,8 +116,10 @@ public class EventServiceImpl implements EventService {
         if (request.eventType() != null) {
             event.setEventType(EventType.valueOf(request.eventType()));
         }
+        log.info("updateEvent()-> event updated! {}", event);
         event = eventRepository.save(event);
         eventCacheRepo.save(event);
+        log.info("updateEvent()-> Event Saved! {}", event.getId());
         return event;
     }
 
@@ -123,6 +128,7 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
         eventRepository.delete(event);
+        log.info("deleteEvent()-> Event deleted! {}", event);
         return event;
     }
 
@@ -209,6 +215,7 @@ public class EventServiceImpl implements EventService {
         event.setPathToImage(imagePath);
         eventRepository.save(event);
         eventCacheRepo.save(event);
+        log.info("updateEventImage()-> Event Image Saved! Event ID: {}, Path: {} ", event.getId(), imagePath);
         return imagePath;
     }
 

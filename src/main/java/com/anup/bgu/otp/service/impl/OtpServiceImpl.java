@@ -46,6 +46,8 @@ public class OtpServiceImpl implements OtpService {
 
         otpCacheRepository.save(otpCache);
 
+        log.debug("sendOtp()->  {}", otpCache);
+
         Map<String, Object> variables = new HashMap<>();
         variables.put("otp", otp);
 
@@ -65,10 +67,12 @@ public class OtpServiceImpl implements OtpService {
     public void verifyOtp(String registrationId, String otp) {
         Optional<OtpCache> otpCacheOptional = otpCacheRepository.findById(registrationId);
         if (otpCacheOptional.isEmpty()) {
+            log.debug("verifyOtp()-> Otp Expired! OTP: {}, Registration ID: {}", otp, registrationId);
             throw new BadOtpException("Otp Expired! Please try again.");
         }
         OtpCache otpCache = otpCacheOptional.get();
         if (!otpCache.getOtp().equals(otp)) {
+            log.debug("verifyOtp()-> Otp Not match! OTP: {}, Registration ID: {}", otp, registrationId);
             throw new BadOtpException("Otp Not match! Please try again.");
         }
         otpCacheRepository.delete(otpCache);

@@ -60,6 +60,7 @@ public class ImageServiceImpl implements ImageService {
             Path path = Paths.get(imagePath);
             return Files.readAllBytes(path);
         } catch (Exception e) {
+            log.warn("getImage() -> filePath: {}", imagePath);
             throw new InvalidImageException("Internal Server Error! Image does not exist.");
         }
     }

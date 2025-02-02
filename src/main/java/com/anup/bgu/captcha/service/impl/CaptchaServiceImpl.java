@@ -6,6 +6,7 @@ import com.anup.bgu.captcha.repo.CaptchaCacheRepo;
 import com.anup.bgu.captcha.service.CaptchaService;
 import com.anup.bgu.exceptions.models.CaptchaException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +23,7 @@ import java.time.Instant;
 import java.util.Base64;
 
 @Service
+@Slf4j
 public class CaptchaServiceImpl implements CaptchaService {
 
     @Value("${secret.captcha-secret}")
@@ -49,6 +51,7 @@ public class CaptchaServiceImpl implements CaptchaService {
 
         String[] parts = decoded.split("\\|");
         if (parts.length != 3) {
+            log.debug("validateCaptcha()-> Invalid Captcha! Hash: {}", decoded);
             throw new CaptchaException("Invalid Captcha!");  // Invalid data in the cookie
         }
 
@@ -57,6 +60,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         String hmacFromCookie = parts[2];
 
         if (!validateHmac(hashedAnswerFromCookie + "|" + expirationTimestamp, hmacFromCookie, CAPTCHA_SECRET)) {
+            log.debug("validateCaptcha()-> Captcha has been tampered! Hash: {} UserAnswer: {}", decoded, userAnswer);
             throw new CaptchaException("Captcha has been tampered"); // HMAC validation failed (data has been tampered)
         }
 

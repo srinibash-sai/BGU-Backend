@@ -33,6 +33,8 @@ public class EmailServiceImpl implements EmailService {
     private void sendEmail(MailData mailData) {
         JavaMailSender mailSender = getMailSender();
 
+        log.info("sendEmail()->  {}",mailData);
+
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         MimeMessageHelper helper = null;
         try {
@@ -69,6 +71,8 @@ public class EmailServiceImpl implements EmailService {
         List<EmailProperties.EmailAccount> accounts = emailProperties.getAccounts();
         EmailProperties.EmailAccount account = accounts.get(index);
 
+        log.debug("getMailSender()->  Sending mail from: {}",account.getEmail());
+
         return mailSenders.get(account.getEmail());
     }
 
@@ -79,7 +83,5 @@ public class EmailServiceImpl implements EmailService {
         MailData mailData = (MailData) serializer.deserialize(message.getBody());
 
         sendEmail(mailData);
-
-        log.info(mailData.toString());
     }
 }

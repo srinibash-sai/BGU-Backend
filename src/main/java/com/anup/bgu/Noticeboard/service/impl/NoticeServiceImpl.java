@@ -47,16 +47,20 @@ public class NoticeServiceImpl implements NoticeService {
         noticeRepository.save(notice);
         noticeCache.save(notice);
 
-        log.info("addNotice()-> {}", notice);
+        log.debug("addNotice()-> {}", notice);
     }
 
     @Override
     public List<NoticeResponse> getAllNotice() {
         List<Notice> notices;
-        if (!noticeCache.isCacheEmpty()) notices = noticeCache.fetchAll(); //fetch from cache
+        if (!noticeCache.isCacheEmpty()){
+            notices = noticeCache.fetchAll(); //fetch from cache
+            log.debug("getAllNotice()-> fetch from cache! {}",notices);
+        }
         else {
             notices = noticeRepository.findAll(); //fetch from db
             noticeCache.saveAll(notices);
+            log.debug("getAllNotice()-> fetch from db! {}",notices);
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
@@ -79,7 +83,7 @@ public class NoticeServiceImpl implements NoticeService {
         if (noticeRepository.existsById(noticeId)) {
             noticeRepository.deleteById(noticeId);
             noticeCache.delete(id);
-            log.info("Notice with id {} deleted successfully", id);
+            log.debug("Notice with id {} deleted successfully", id);
         } else {
             throw new NotFoundException("Notice with ID:" + id + " not found!");
         }

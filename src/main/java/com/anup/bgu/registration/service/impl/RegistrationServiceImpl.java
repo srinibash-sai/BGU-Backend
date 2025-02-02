@@ -55,12 +55,15 @@ public class RegistrationServiceImpl implements RegistrationService {
         Event event = eventService.getEventById(eventId);
 
         if (!event.getStatus().equals(Status.ONGOING)) {
+            log.debug("register()-> Event is {}. RegistrationRequest: {}, EventId: {}", event.getStatus().toString().toLowerCase(), request, eventId);
             throw new RegistrationProcessingException("Event is " + event.getStatus().toString().toLowerCase() + ". Can not register now.");
         }
 
         if (event.getTeamType().equals(EventTeamType.SOLO) && getBySoloEventAndUser(event, request.email()).isPresent()) {
+            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}",eventId,request);
             throw new RegistrationProcessingException("Registration already exists by email:" + request.email() + "!");
         } else if (event.getTeamType().equals(EventTeamType.TEAM) && getByTeamEventAndLeader(event, request.email()).isPresent()) {
+            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}",eventId,request);
             throw new RegistrationProcessingException("Registration already exists by email:" + request.email() + "!");
         }
 
