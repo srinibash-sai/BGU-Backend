@@ -1,7 +1,6 @@
 package com.anup.bgu.registration.mapper;
 
 import com.anup.bgu.payments.entities.Payment;
-import com.anup.bgu.registration.dto.RegistrationRequest;
 import com.anup.bgu.registration.dto.RegistrationResponse;
 import com.anup.bgu.registration.entities.SoloRegistration;
 import com.anup.bgu.registration.entities.StudentType;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class RegistrationMapper {
         registrationResponse.setPhone(soloRegistration.getPhone());
         registrationResponse.setStudentType(soloRegistration.getStudentType().toString());
         registrationResponse.setGender(soloRegistration.getGender().toString());
-        registrationResponse.setRegistrationDate(toLocalDateTimeFromInstant(soloRegistration.getRegistrationDate()).toString());
+        registrationResponse.setRegistrationDate(formatDateTime(soloRegistration.getRegistrationDate()).toString());
         registrationResponse.setCollegeName(soloRegistration.getCollegeName());
 
         if (soloRegistration.getStudentType().equals(StudentType.NON_BGU)) {
@@ -52,7 +52,7 @@ public class RegistrationMapper {
         registrationResponse.setPhone(teamRegistration.getPhone());
         registrationResponse.setStudentType(teamRegistration.getStudentType().toString());
         registrationResponse.setGender(teamRegistration.getGender().toString());
-        registrationResponse.setRegistrationDate(toLocalDateTimeFromInstant(teamRegistration.getRegistrationDate()).toString());
+        registrationResponse.setRegistrationDate(formatDateTime(teamRegistration.getRegistrationDate()));
         registrationResponse.setCollegeName(teamRegistration.getCollegeName());
 
         if (teamRegistration.getStudentType().equals(StudentType.NON_BGU)) {
@@ -73,13 +73,13 @@ public class RegistrationMapper {
     }
 
     public List<RegistrationResponse> toSoloListRegistrationResponse(List<SoloRegistration> soloRegistrations) {
-        log.info("toSoloListRegistrationResponse() -> {}",soloRegistrations.toString());
+        log.info("toSoloListRegistrationResponse() -> {}", soloRegistrations.toString());
         List<RegistrationResponse> registrationResponses = new ArrayList<>();
         for (SoloRegistration soloRegistration : soloRegistrations) {
-            log.info("toSoloListRegistrationResponse() -> for loop -> {}",soloRegistration.toString());
+            log.info("toSoloListRegistrationResponse() -> for loop -> {}", soloRegistration.toString());
             registrationResponses.add(toSoloRegistrationResponse(soloRegistration));
         }
-        log.info("toSoloListRegistrationResponse() 82 -> {}",registrationResponses.toString());
+        log.info("toSoloListRegistrationResponse() 82 -> {}", registrationResponses.toString());
         return registrationResponses;
     }
 
@@ -91,8 +91,10 @@ public class RegistrationMapper {
         return registrationResponses;
     }
 
-    private LocalDateTime toLocalDateTimeFromInstant(Instant instant) {
-        return LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+    private String formatDateTime(Instant instant) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        return localDateTime.format(formatter);
     }
 
     private String getScreenshotURL(Payment payment) {

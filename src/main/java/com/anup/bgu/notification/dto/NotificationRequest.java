@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 public record NotificationRequest(
         @NotBlank(message = "Title cannot be blank.")
-        @Size(max = 100, message = "Title cannot exceed 100 characters.")
+        @Size(max = 150, message = "Title cannot exceed 150 characters.")
         String title,
 
         @NotBlank(message = "Message cannot be blank.")

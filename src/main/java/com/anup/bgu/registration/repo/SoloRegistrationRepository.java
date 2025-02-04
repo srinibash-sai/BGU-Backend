@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface SoloRegistrationRepository extends JpaRepository<SoloRegistration, String> {
     Optional<SoloRegistration> findByEmailAndEvent(String email, Event event);
     List<SoloRegistration> findAllByEvent(Event event);
+    void deleteByEvent(Event event);
 }

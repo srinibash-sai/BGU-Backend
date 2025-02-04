@@ -1,5 +1,7 @@
 package com.anup.bgu.registration.service.impl;
 
+import com.anup.bgu.excel.dto.ExcelData;
+import com.anup.bgu.excel.service.ExcelService;
 import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.event.entities.EventTeamType;
 import com.anup.bgu.event.entities.Status;
@@ -44,6 +46,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final OtpService otpService;
     private final RegistrationMapper registrationMapper;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ExcelService excelService;
 
     @PostConstruct
     void vjhv() {
@@ -60,10 +63,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         if (event.getTeamType().equals(EventTeamType.SOLO) && getBySoloEventAndUser(event, request.email()).isPresent()) {
-            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}",eventId,request);
+            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}", eventId, request);
             throw new RegistrationProcessingException("Registration already exists by email:" + request.email() + "!");
         } else if (event.getTeamType().equals(EventTeamType.TEAM) && getByTeamEventAndLeader(event, request.email()).isPresent()) {
-            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}",eventId,request);
+            log.debug("register()-> Registration already exists! EventId: {}, RegistrationRequest: {}", eventId, request);
             throw new RegistrationProcessingException("Registration already exists by email:" + request.email() + "!");
         }
 
@@ -105,12 +108,33 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         if (event.getTeamType().equals(EventTeamType.SOLO)) {
             List<SoloRegistration> soloRegistrations = soloRepository.findAllByEvent(event);
-            log.info("getAllRegistration() -> {}", soloRegistrations);
+            log.info("getAllRegistration()-> {}", soloRegistrations);
             return registrationMapper.toSoloListRegistrationResponse(soloRegistrations);
         } else {
             List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
             log.info("getAllRegistration() -> {}", teamRegistrations);
             return registrationMapper.toTeamListRegistrationResponse(teamRegistrations);
+        }
+    }
+
+    @Override
+    public ExcelData exportToExcel(String id) {
+        Event event = eventService.getEventById(id);
+        log.info("exportToExcel() -> {}", event);
+
+        if (event.getTeamType().equals(EventTeamType.SOLO)) {
+            List<SoloRegistration> soloRegistrations = soloRepository.findAllByEvent(event);
+            log.info("exportToExcel()-> {}", soloRegistrations);
+            List<RegistrationResponse> soloListRegistrationResponse =
+                    registrationMapper.toSoloListRegistrationResponse(soloRegistrations);
+
+            return excelService.soloToExcel(soloListRegistrationResponse,event.getTitle());
+        } else {
+            List<TeamRegistration> teamRegistrations = teamRepository.findAllByEvent(event);
+            log.info("exportToExcel() -> {}", teamRegistrations);
+            List<RegistrationResponse> teamListRegistrationResponse =
+                    registrationMapper.toTeamListRegistrationResponse(teamRegistrations);
+            return excelService.teamToExcel(teamListRegistrationResponse,event.getTitle());
         }
     }
 

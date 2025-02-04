@@ -15,12 +15,13 @@ import java.util.Date;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class Notification {
+@Builder
+public class NotificationHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(length = 100)
+    @Column(length = 150)
     private String title;
     @Column(length = 500)
     private String message;

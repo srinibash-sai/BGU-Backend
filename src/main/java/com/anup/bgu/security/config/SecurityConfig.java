@@ -57,6 +57,8 @@ public class SecurityConfig {
                                 "/feedback").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/notice").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/notification/subscribe").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

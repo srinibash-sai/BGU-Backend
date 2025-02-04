@@ -51,13 +51,13 @@ public class EventController {
     }
 
     // Delete an event by ID
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<EventResponse> deleteEvent(
-//            @PathVariable("id") @NotEmpty String id
-//    ) {
-//        var event = eventService.deleteEvent(id);
-//        return new ResponseEntity<>(eventMapper.toEventResponse(event), HttpStatus.OK);
-//    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<EventResponse> deleteEvent(
+            @PathVariable("id") @NotEmpty String id
+    ) {
+        var event = eventService.deleteEvent(id);
+        return new ResponseEntity<>(eventMapper.toEventResponse(event), HttpStatus.OK);
+    }
 
     // Get all events by type and status
     @GetMapping

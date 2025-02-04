@@ -1,6 +1,7 @@
 package com.anup.bgu.config;
 
 import com.anup.bgu.mail.service.EmailService;
+import com.anup.bgu.notification.service.NotificationService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -68,16 +69,24 @@ public class RedisConfigurations {
     }
 
     @Bean
+    MessageListenerAdapter notificationMessageListenerAdapter(NotificationService notificationService) {
+        return new MessageListenerAdapter(notificationService);
+    }
+
+    @Bean
     RedisMessageListenerContainer container(
             RedisConnectionFactory factory,
             @Qualifier("mailMessageListenerAdapter")
             MessageListenerAdapter mailMessageListenerAdapter,
+            @Qualifier("notificationMessageListenerAdapter")
+            MessageListenerAdapter notificationMessageListenerAdapter,
             @Qualifier("redisMailTaskExecutor")
             TaskExecutor taskExecutor
     ) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(factory);
         container.addMessageListener(mailMessageListenerAdapter, ChannelTopic.of("mail"));
+        container.addMessageListener(notificationMessageListenerAdapter, ChannelTopic.of("notification"));
         container.setTaskExecutor(taskExecutor);
         return container;
     }

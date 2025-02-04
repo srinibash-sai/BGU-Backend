@@ -14,9 +14,14 @@ import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.EventNotFoundException;
 import com.anup.bgu.exceptions.models.InvalidRequestException;
 import com.anup.bgu.image.service.ImageService;
+import com.anup.bgu.notification.dto.NotificationRequest;
+import com.anup.bgu.registration.repo.SoloRegistrationRepository;
+import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -32,6 +37,9 @@ public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
     private final EventCacheRepo eventCacheRepo;
+    private final SoloRegistrationRepository soloRegistrationRepository;
+    private final TeamRegistrationRepository teamRegistrationRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Event createEvent(EventRequest eventRequest) {
@@ -62,11 +70,20 @@ public class EventServiceImpl implements EventService {
         log.info("createEvent()-> Event Saved! {}", event.getId());
 
         //send notification
+        NotificationRequest notificationRequest = new NotificationRequest(
+                "🎉 New Event Alert: " + event.getTitle() + " - Join Now! 🚀",
+                "📅 Event Name: " + event.getTitle() + "\n" +
+                        "🗓 Date & Time: " + event.getDateTime() + "\n" +
+                        "🔗 Don't miss out! Register now! 💥"
+        );
+
+        redisTemplate.convertAndSend("notification", notificationRequest);
 
         return event;
     }
 
     @Override
+    @Transactional
     public Event updateEvent(String id, EventUpdateRequest request) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
@@ -81,9 +98,25 @@ public class EventServiceImpl implements EventService {
             event.setStatus(Status.valueOf(request.status()));
             if (event.getStatus().equals(Status.ONGOING)) {
                 //send notification
+                NotificationRequest notificationRequest = new NotificationRequest(
+                        "🎉 Event Open for Registration: " + event.getTitle() + " - Join Now! 🚀",
+                        "📅 Event Name: " + event.getTitle() + "\n" +
+                                "🗓 Date & Time: " + event.getDateTime() + "\n" +
+                                "📝 Registration Open! Don't miss out on this amazing opportunity!\n" +
+                                "🔗 Register now and be part of the excitement! 💥"
+                );
+
+                redisTemplate.convertAndSend("notification", notificationRequest);
             }
             if (event.getStatus().equals(Status.CLOSED)) {
                 //send notification
+                NotificationRequest notificationRequest = new NotificationRequest(
+                        "❌ Event Closed: " + event.getTitle() + " - Stay Tuned! 📅",
+                        "🚫 The event '" + event.getTitle() + "' is now closed for registration.\n" +
+                                "🎯 Don't worry, more exciting events are coming soon!\n" +
+                                "📆 Stay updated and be ready for the next one! 💪"
+                );
+                redisTemplate.convertAndSend("notification", notificationRequest);
             }
         }
         if (request.rules() != null) {
@@ -124,10 +157,16 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public Event deleteEvent(String id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
+
+        soloRegistrationRepository.deleteByEvent(event);
+        teamRegistrationRepository.deleteByEvent(event);
+
         eventRepository.delete(event);
+        eventCacheRepo.delete(event);
         log.info("deleteEvent()-> Event deleted! {}", event);
         return event;
     }
@@ -208,6 +247,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public String updateEventImage(String id, MultipartFile file) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));

@@ -2,4 +2,4 @@ spring:
   application:
     name: BGU
   profiles:
-    active: dev
+    active: docker

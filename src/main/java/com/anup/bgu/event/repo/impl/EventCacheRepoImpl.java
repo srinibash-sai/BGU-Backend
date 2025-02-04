@@ -31,6 +31,11 @@ public class EventCacheRepoImpl implements EventCacheRepo {
     }
 
     @Override
+    public void delete(Event event) {
+        redisTemplate.opsForHash().delete(HASH_KEY, event.getId());
+    }
+
+    @Override
     public Optional<List<Event>> findAll() {
         Map<Object, Object> allEvents = redisTemplate.opsForHash().entries(HASH_KEY);
 

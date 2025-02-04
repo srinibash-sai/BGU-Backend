@@ -1,10 +1,8 @@
 package com.anup.bgu.notification.controller;
 
 
-import com.anup.bgu.event.dto.EventRequest;
-import com.anup.bgu.event.dto.EventResponse;
-import com.anup.bgu.event.entities.Event;
 import com.anup.bgu.notification.dto.NotificationRequest;
+import com.anup.bgu.notification.dto.TokenRequest;
 import com.anup.bgu.notification.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -26,8 +24,16 @@ public class NotificationController {
     @PostMapping
     public ResponseEntity<Void> pushNotification(
             @RequestBody @Valid NotificationRequest request
-            ) {
+    ) {
         service.pushNotification(request);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/subscribe")
+    ResponseEntity<Void> sendToken(
+            @RequestBody @Valid TokenRequest token
+    ) {
+        service.subscribe(token);
+        return ResponseEntity.ok().build();
     }
 }

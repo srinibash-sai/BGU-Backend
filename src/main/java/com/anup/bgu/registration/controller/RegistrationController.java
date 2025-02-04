@@ -1,5 +1,6 @@
 package com.anup.bgu.registration.controller;
 
+import com.anup.bgu.excel.dto.ExcelData;
 import com.anup.bgu.captcha.service.CaptchaService;
 import com.anup.bgu.otp.dto.OtpRequest;
 import com.anup.bgu.otp.dto.OtpResponse;
@@ -11,6 +12,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +35,7 @@ public class RegistrationController {
             @RequestBody @Valid RegistrationRequest registrationRequest,
             @CookieValue(value = "captcha_hash", defaultValue = "") String captchaHash
     ) {
-        captchaService.validateCaptcha(registrationRequest.captcha(),captchaHash);
+        captchaService.validateCaptcha(registrationRequest.captcha(), captchaHash);
 
         OtpResponse otpResponse = registrationService.register(id, registrationRequest);
 
@@ -45,7 +47,7 @@ public class RegistrationController {
             @PathVariable("id") @NotEmpty String id
     ) {
         List<RegistrationResponse> allRegistration = registrationService.getAllRegistration(id);
-        log.info("getAllRegistration() -> {}",allRegistration.toString());
+        log.info("getAllRegistration() -> {}", allRegistration.toString());
 
         return new ResponseEntity<>(allRegistration, HttpStatus.OK);
     }
@@ -56,5 +58,18 @@ public class RegistrationController {
     ) {
         RegSuccess regSuccess = registrationService.verifyOtp(otpRequest);
         return new ResponseEntity<>(regSuccess, HttpStatus.OK);
+    }
+
+    @GetMapping("/export/{id}")
+    public ResponseEntity<byte[]> exportRegistrationDataToExcel(
+            @PathVariable("id") @NotEmpty String id
+    ) {
+        ExcelData excelData = registrationService.exportToExcel(id);
+
+        String header = "attachment; filename=" + excelData.filename() + ".xlsx";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, header)
+                .body(excelData.data());
     }
 }

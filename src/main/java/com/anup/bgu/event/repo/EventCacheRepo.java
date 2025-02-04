@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface EventCacheRepo {
     Event save(Event event);
 
+    void delete(Event event);
+
     Optional<List<Event>> findAll();
 
     Optional<Event> findById(String id);

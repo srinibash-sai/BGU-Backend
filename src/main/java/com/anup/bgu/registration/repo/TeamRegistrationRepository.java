@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface TeamRegistrationRepository extends JpaRepository<TeamRegistration, String> {
     Optional<TeamRegistration> findByEmailAndEvent(String email, Event event);
     List<TeamRegistration> findAllByEvent(Event event);
+    void deleteByEvent(Event event);
 }
