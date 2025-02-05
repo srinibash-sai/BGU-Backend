@@ -19,6 +19,7 @@ import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,9 +66,9 @@ public class EventServiceImpl implements EventService {
         }
 
         event = eventRepository.save(event);
-        log.info("createEvent()-> New event Created! {}", event);
+        log.info("createEvent()-> New event Created in db! {}", event);
         eventCacheRepo.save(event);
-        log.info("createEvent()-> Event Saved! {}", event.getId());
+        log.info("createEvent()-> Event Saved in cache! {}", event.getId());
 
         //send notification
         NotificationRequest notificationRequest = new NotificationRequest(
@@ -231,18 +232,15 @@ public class EventServiceImpl implements EventService {
     public Event getEventById(String id) {
         Optional<Event> cachedEvent = eventCacheRepo.findById(id);
 
-        if (cachedEvent.isPresent()) return cachedEvent.get();
-
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + " does not exist!"));
-
-        eventCacheRepo.save(event);
-        return event;
+        return cachedEvent.orElseGet(() -> eventRepository.findById(id)
+                .orElseThrow(() -> new EventNotFoundException("Event id: " + id + " does not exist!")));
     }
 
     @Override
+    @Cacheable(value = "eventPictures", key = "#id")
     public byte[] getEventImage(String id) {
         Event event = getEventById(id);
+        log.debug("getEventImage()-> Getting image from file system. {}",event.getPathToImage());
         return imageService.getImage(event.getPathToImage());
     }
 
