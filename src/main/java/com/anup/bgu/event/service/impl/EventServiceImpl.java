@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -174,58 +175,36 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventResponse> getAllEvents(String eventType, String status) {
-        List<Event> events;
-        // Check the cache for events based on the provided filters
-        if (eventType != null && status != null) {
-            // Try to fetch events by EventType and Status from cache
-            Optional<List<Event>> cachedEvents = eventCacheRepo.findByEventTypeAndStatus(
-                    EventType.valueOf(eventType.toUpperCase()),
-                    Status.valueOf(status.toUpperCase())
-            );
-            if (cachedEvents.isPresent()) {
-                events = cachedEvents.get();
-            } else {
-                events = eventRepository.findByEventTypeAndStatus(
-                        EventType.valueOf(eventType.toUpperCase()),
-                        Status.valueOf(status.toUpperCase())
-                );
-                eventCacheRepo.saveAll(events);
-            }
-        } else if (eventType != null) {
-            // Try to fetch events by EventType from cache
-            Optional<List<Event>> cachedEvents = eventCacheRepo.findByEventType(
-                    EventType.valueOf(eventType.toUpperCase())
-            );
-            if (cachedEvents.isPresent()) {
-                events = cachedEvents.get();
-            } else {
-                events = eventRepository.findByEventType(EventType.valueOf(eventType.toUpperCase()));
-                eventCacheRepo.saveAll(events);
-            }
-        } else if (status != null) {
-            // Try to fetch events by Status from cache
-            Optional<List<Event>> cachedEvents = eventCacheRepo.findByStatus(
-                    Status.valueOf(status.toUpperCase())
-            );
-            if (cachedEvents.isPresent()) {
-                events = cachedEvents.get();
-            } else {
-                events = eventRepository.findByStatus(Status.valueOf(status.toUpperCase()));
-                eventCacheRepo.saveAll(events);
-            }
-        } else {
-            // Try to fetch all events from cache
-            Optional<List<Event>> cachedEvents = eventCacheRepo.findAll();
-            if (cachedEvents.isPresent()) {
-                events = cachedEvents.get();
-            } else {
-                events = eventRepository.findAll();
-                eventCacheRepo.saveAll(events);
-            }
-        }
 
-        // Map events to EventResponse DTOs
-        return eventMapper.toEventResponseList(events);
+        Optional<List<Event>> cachedEvents = eventCacheRepo.findAll();
+        List<Event> events = cachedEvents.orElseGet(() -> {
+            List<Event> fetchedEvents = eventRepository.findAll();
+            eventCacheRepo.saveAll(fetchedEvents);
+            return fetchedEvents;
+        });
+
+        if (eventType != null && status != null) {
+            return eventMapper.toEventResponseList(
+                    events.stream()
+                            .filter(event ->
+                                    event.getEventType().name().equals(eventType) && event.getStatus().name().equals(status))
+                            .toList()
+            );
+        } else if (eventType != null) {
+            return eventMapper.toEventResponseList(
+                    events.stream()
+                            .filter(event -> event.getEventType().name().equals(eventType))
+                            .toList()
+            );
+        } else if (status != null) {
+            return eventMapper.toEventResponseList(
+                    events.stream()
+                            .filter(event -> event.getStatus().name().equals(status))
+                            .toList()
+            );
+        } else {
+            return eventMapper.toEventResponseList(events);
+        }
     }
 
     @Override
@@ -240,7 +219,7 @@ public class EventServiceImpl implements EventService {
     @Cacheable(value = "eventPictures", key = "#id")
     public byte[] getEventImage(String id) {
         Event event = getEventById(id);
-        log.debug("getEventImage()-> Getting image from file system. {}",event.getPathToImage());
+        log.debug("getEventImage()-> Getting image from file system. {}", event.getPathToImage());
         return imageService.getImage(event.getPathToImage());
     }
 
@@ -258,11 +237,12 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public void increaseRegistrationCount(String id) {
-        eventRepository.findById(id).ifPresent(e -> {
-            e.setCurrentRegistration(e.getCurrentRegistration() + 1);
-            eventRepository.save(e);
-            eventCacheRepo.save(e);
+        eventRepository.findById(id).ifPresent(event -> {
+            event.setCurrentRegistration(event.getCurrentRegistration() + 1);
+            eventRepository.save(event);
+            eventCacheRepo.save(event);
         });
     }
 }

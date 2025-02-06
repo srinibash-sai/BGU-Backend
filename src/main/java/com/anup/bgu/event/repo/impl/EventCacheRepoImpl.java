@@ -58,54 +58,6 @@ public class EventCacheRepoImpl implements EventCacheRepo {
     }
 
     @Override
-    public Optional<List<Event>> findByEventTypeAndStatus(EventType eventType, Status status) {
-        Map<Object, Object> allEvents = redisTemplate.opsForHash().entries(HASH_KEY);
-
-        if (allEvents.isEmpty()) {
-            return Optional.empty();
-        }
-
-        List<Event> eventList = allEvents.values().stream()
-                .map(event -> (Event) event)
-                .filter(event -> event.getEventType() == eventType && event.getStatus() == status)
-                .collect(Collectors.toList());
-
-        return eventList.isEmpty() ? Optional.empty() : Optional.of(eventList);
-    }
-
-    @Override
-    public Optional<List<Event>> findByEventType(EventType eventType) {
-        Map<Object, Object> allEvents = redisTemplate.opsForHash().entries(HASH_KEY);
-
-        if (allEvents.isEmpty()) {
-            return Optional.empty();
-        }
-
-        List<Event> eventList = allEvents.values().stream()
-                .map(event -> (Event) event)
-                .filter(event -> event.getEventType() == eventType)
-                .collect(Collectors.toList());
-
-        return eventList.isEmpty() ? Optional.empty() : Optional.of(eventList);
-    }
-
-    @Override
-    public Optional<List<Event>> findByStatus(Status status) {
-        Map<Object, Object> allEvents = redisTemplate.opsForHash().entries(HASH_KEY);
-
-        if (allEvents.isEmpty()) {
-            return Optional.empty();
-        }
-
-        List<Event> eventList = allEvents.values().stream()
-                .map(event -> (Event) event)
-                .filter(event -> event.getStatus() == status)
-                .collect(Collectors.toList());
-
-        return eventList.isEmpty() ? Optional.empty() : Optional.of(eventList);
-    }
-
-    @Override
     public void saveAll(List<Event> events) {
         for (Event event : events) {
             redisTemplate.opsForHash().put(HASH_KEY, event.getId(), event);
