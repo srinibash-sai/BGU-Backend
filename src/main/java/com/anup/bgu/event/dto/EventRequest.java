@@ -1,9 +1,7 @@
 package com.anup.bgu.event.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 public record EventRequest(
         @NotBlank(message = "Title is required")
         @Size(max = 200, message = "Title cannot exceed 200 characters")
@@ -47,6 +45,10 @@ public record EventRequest(
         Integer maxTeamSize,
 
         @Min(value = 2, message = "Minimum Team size should be 2")
-        Integer minTeamSize
+        Integer minTeamSize,
+
+        @NotNull(message = "maxRegistration is required")
+        @Min(value = 0, message = "maxRegistration should not be less than zero")
+        Integer maxRegistration
 ) {
 }

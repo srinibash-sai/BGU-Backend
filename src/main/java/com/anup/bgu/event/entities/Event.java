@@ -38,4 +38,5 @@ public class Event implements Serializable {
     private int minMember;
 
     private int currentRegistration;
+    private int maxRegistration;
 }

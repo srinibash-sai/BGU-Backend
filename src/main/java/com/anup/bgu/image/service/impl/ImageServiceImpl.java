@@ -92,20 +92,24 @@ public class ImageServiceImpl implements ImageService {
         return filePath;
     }
 
-    @Async
     private void saveFile(byte[] file, String targetPath) {
-        int RETRY_THRESHOLD = 3;
+        final int MAX_RETRIES = 3;
+        int retryCount = 0;
 
-        while (RETRY_THRESHOLD > 0) {
+        while (retryCount < MAX_RETRIES) {
             try {
                 Path path = Paths.get(targetPath);
-                log.debug("saveFile() -> RETRY_THRESHOLD: {}, path: {}", RETRY_THRESHOLD, path);
+                log.debug("saveFile() -> Retry attempt: {}/{} , path: {}", retryCount + 1, MAX_RETRIES, path);
                 Files.write(path, file);
+
+                return;
             } catch (IOException e) {
-                log.warn("saveFile() -> IOException: {}", e.getMessage(), e);
-                throw new RuntimeException(e);
+                retryCount++;
+                log.warn("saveFile() -> IOException on attempt {}: {}", retryCount, e.getMessage(), e);
+                if (retryCount == MAX_RETRIES) {
+                    throw new RuntimeException("Failed to save file after " + MAX_RETRIES + " attempts.", e);
+                }
             }
-            RETRY_THRESHOLD--;
         }
     }
 

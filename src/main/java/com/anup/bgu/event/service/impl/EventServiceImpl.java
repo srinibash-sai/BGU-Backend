@@ -58,6 +58,7 @@ public class EventServiceImpl implements EventService {
                 .coordinatorName(eventRequest.coordinatorName())
                 .coordinatorNumber(eventRequest.coordinatorNumber())
                 .teamType(EventTeamType.valueOf(eventRequest.teamType()))
+                .maxRegistration(eventRequest.maxRegistration())
                 .build();
 
         if (event.getTeamType().equals(EventTeamType.TEAM)) {
@@ -134,6 +135,9 @@ public class EventServiceImpl implements EventService {
         }
         if (request.amount() != null) {
             event.setAmount(request.amount());
+        }
+        if (request.maxRegistration() != null) {
+            event.setMaxRegistration(request.maxRegistration());
         }
         if (request.teamType() != null) {
             event.setTeamType(EventTeamType.valueOf(request.teamType()));
@@ -237,9 +241,20 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public void increaseRegistrationCount(String id) {
+    public synchronized void increaseRegistrationCount(String id) {
         eventRepository.findById(id).ifPresent(event -> {
             event.setCurrentRegistration(event.getCurrentRegistration() + 1);
+            if(event.getCurrentRegistration()>=event.getMaxRegistration()){
+                event.setStatus(Status.CLOSED);
+                //send notification
+                NotificationRequest notificationRequest = new NotificationRequest(
+                        "❌ Event Closed: " + event.getTitle() + " - Stay Tuned! 📅",
+                        "🚫 The event '" + event.getTitle() + "' is now closed for registration.\n" +
+                                "🎯 Don't worry, more exciting events are coming soon!\n" +
+                                "📆 Stay updated and be ready for the next one! 💪"
+                );
+                redisTemplate.convertAndSend("notification", notificationRequest);
+            }
             eventRepository.save(event);
             eventCacheRepo.save(event);
         });
