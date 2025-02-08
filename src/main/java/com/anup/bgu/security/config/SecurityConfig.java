@@ -31,10 +31,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${secret.admin-user}")
-    private String ADMIN_USERNAME;
-    @Value("${secret.admin-password}")
-    private String ADMIN_PASSWORD;
     @Value("${secret.cors}")
     private String[] cors;
 
@@ -71,6 +67,7 @@ public class SecurityConfig {
                                 "/notice").permitAll()
                         .requestMatchers(HttpMethod.POST,
                                 "/notification/subscribe").permitAll()
+                        .requestMatchers("/invitation/ticket/{id}").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

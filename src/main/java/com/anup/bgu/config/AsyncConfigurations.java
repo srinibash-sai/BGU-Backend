@@ -25,8 +25,8 @@ public class AsyncConfigurations {
     ThreadPoolTaskExecutor redisMailTaskExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(10); // Set the core pool size
-        executor.setMaxPoolSize(200); // Set the maximum pool size
-        executor.setQueueCapacity(200); // Set the queue capacity
+        executor.setMaxPoolSize(100); // Set the maximum pool size
+        executor.setQueueCapacity(500); // Set the queue capacity
         executor.setThreadNamePrefix("MailThread-");
         executor.initialize();
         return executor;

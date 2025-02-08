@@ -2,20 +2,28 @@ package com.anup.bgu.excel.service.impl;
 
 import com.anup.bgu.excel.dto.ExcelData;
 import com.anup.bgu.excel.service.ExcelService;
+import com.anup.bgu.exceptions.models.BadRequestException;
 import com.anup.bgu.registration.dto.RegistrationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 public class ExcelServiceImpl implements ExcelService {
+
+    private static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+
     @Override
     public ExcelData soloToExcel(List<RegistrationResponse> registration, String eventName) {
         Workbook workbook = new XSSFWorkbook();  // Create a new workbook
@@ -178,6 +186,45 @@ public class ExcelServiceImpl implements ExcelService {
 
         // Return the Excel data and filename
         return new ExcelData(excelData, filename);
+    }
+
+    @Override
+    public List<String> emailExcelToList(MultipartFile file) {
+        Workbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook(file.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Sheet sheet = workbook.getSheetAt(0);
+
+        List<String> emails = new ArrayList<>();
+
+        for (Row row : sheet) {
+            Cell cell = row.getCell(0);
+
+            if (cell != null && cell.getCellType() == CellType.STRING) {
+                String email = cell.getStringCellValue();
+                if (isValidEmail(email)) {
+                    emails.add(email);
+                } else {
+                    throw new BadRequestException("Invalid Email at row:" + row.getRowNum() + 1 + " !(" + email + ")");
+                }
+            }
+        }
+
+        try {
+            workbook.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return emails;
+    }
+
+    private boolean isValidEmail(String email) {
+        Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
 
 

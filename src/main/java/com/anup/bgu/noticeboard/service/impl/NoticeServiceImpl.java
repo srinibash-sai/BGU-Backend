@@ -1,24 +1,20 @@
-package com.anup.bgu.Noticeboard.service.impl;
+package com.anup.bgu.noticeboard.service.impl;
 
-import com.anup.bgu.Noticeboard.dto.NoticeRequest;
-import com.anup.bgu.Noticeboard.dto.NoticeResponse;
-import com.anup.bgu.Noticeboard.entities.Notice;
-import com.anup.bgu.Noticeboard.repo.NoticeCacheRepo;
-import com.anup.bgu.Noticeboard.repo.NoticeRepository;
-import com.anup.bgu.Noticeboard.service.NoticeService;
-import com.anup.bgu.exceptions.models.BadRequestException;
+import com.anup.bgu.noticeboard.dto.NoticeRequest;
+import com.anup.bgu.noticeboard.dto.NoticeResponse;
+import com.anup.bgu.noticeboard.entities.Notice;
+import com.anup.bgu.noticeboard.repo.NoticeCacheRepo;
+import com.anup.bgu.noticeboard.repo.NoticeRepository;
+import com.anup.bgu.noticeboard.service.NoticeService;
 import com.anup.bgu.exceptions.models.InvalidRequestException;
 import com.anup.bgu.exceptions.models.NotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 @Service

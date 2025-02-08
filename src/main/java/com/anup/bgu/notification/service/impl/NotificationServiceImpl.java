@@ -3,7 +3,9 @@ package com.anup.bgu.notification.service.impl;
 import com.anup.bgu.notification.dto.NotificationRequest;
 import com.anup.bgu.notification.dto.TokenRequest;
 import com.anup.bgu.notification.entities.NotificationHistory;
+import com.anup.bgu.notification.entities.SubscribedToken;
 import com.anup.bgu.notification.repo.NotificationRepository;
+import com.anup.bgu.notification.repo.SubscribedTokenRepository;
 import com.anup.bgu.notification.service.NotificationService;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
@@ -23,6 +25,7 @@ public class NotificationServiceImpl implements NotificationService {
 
     private final FirebaseMessaging firebaseMessaging;
     private final NotificationRepository notificationRepository;
+    private final SubscribedTokenRepository tokenRepository;
     private final String TOPIC = "broadcast";
 
     @Override
@@ -55,11 +58,17 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void subscribe(TokenRequest token) {
-        try {
-            firebaseMessaging.subscribeToTopic(List.of(token.token()), TOPIC);
+        if (!tokenRepository.existsByToken(token.token())) {
+            try {
+                firebaseMessaging.subscribeToTopic(List.of(token.token()), TOPIC);
 
-        } catch (FirebaseMessagingException e) {
-            throw new RuntimeException(e);
+            } catch (FirebaseMessagingException e) {
+                throw new RuntimeException(e);
+            }
+            log.debug("subscribe()-> Subscribed to token:{}",token.token());
+            tokenRepository.save(
+              SubscribedToken.builder().token(token.token()).build()
+            );
         }
     }
 

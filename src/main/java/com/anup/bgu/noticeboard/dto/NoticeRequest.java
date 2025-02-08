@@ -1,4 +1,4 @@
-package com.anup.bgu.Noticeboard.dto;
+package com.anup.bgu.noticeboard.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

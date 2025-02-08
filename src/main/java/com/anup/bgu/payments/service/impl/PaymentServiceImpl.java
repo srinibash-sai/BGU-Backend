@@ -1,7 +1,5 @@
 package com.anup.bgu.payments.service.impl;
 
-import com.anup.bgu.event.entities.Event;
-import com.anup.bgu.event.repo.EventRepository;
 import com.anup.bgu.event.service.EventService;
 import com.anup.bgu.exceptions.models.EmailNotVerifiedException;
 import com.anup.bgu.exceptions.models.PaymentConflictException;
@@ -94,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
             MailData mailData = new MailData(
                     soloRegistration.getEmail(),
                     "Registration Complete",
-                    "solo-registration",
+                    "mail-templates/solo-registration",
                     variables
             );
             redisTemplate.convertAndSend("mail", mailData);
@@ -152,7 +150,7 @@ public class PaymentServiceImpl implements PaymentService {
             MailData mailData = new MailData(
                     teamRegistration.getEmail(),
                     subject,
-                    "team-registration",
+                    "mail-templates/team-registration",
                     variables
             );
 

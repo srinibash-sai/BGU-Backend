@@ -1,4 +1,4 @@
-package com.anup.bgu.Noticeboard.dto;
+package com.anup.bgu.noticeboard.dto;
 
 public record NoticeResponse(
         String id,

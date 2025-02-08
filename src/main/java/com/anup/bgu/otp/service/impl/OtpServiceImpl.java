@@ -54,7 +54,7 @@ public class OtpServiceImpl implements OtpService {
         MailData mailData = new MailData(
                 email,
                 "OTP Verification",
-                "otp-template",
+                "mail-templates/otp-template",
                 variables
         );
 

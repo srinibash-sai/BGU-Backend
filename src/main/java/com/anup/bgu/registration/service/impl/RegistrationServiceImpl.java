@@ -48,11 +48,6 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RedisTemplate<String, Object> redisTemplate;
     private final ExcelService excelService;
 
-    @PostConstruct
-    void vjhv() {
-        log.info(BGU_MAIL_DOMAIN);
-    }
-
     @Override
     public OtpResponse register(String eventId, RegistrationRequest request) {
         Event event = eventService.getEventById(eventId);
@@ -165,7 +160,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             MailData mailData = new MailData(
                     teamRegistration.getEmail(),
                     subject,
-                    "team-registration",
+                    "mail-templates/team-registration",
                     variables
             );
 
@@ -199,7 +194,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             MailData mailData = new MailData(
                     soloRegistration.getEmail(),
                     "Registration Complete",
-                    "solo-registration",
+                    "mail-templates/solo-registration",
                     variables
             );
             redisTemplate.convertAndSend("mail", mailData);

@@ -1,9 +1,7 @@
-package com.anup.bgu.Noticeboard.repo.impl;
+package com.anup.bgu.noticeboard.repo.impl;
 
-import com.anup.bgu.Noticeboard.entities.Notice;
-import com.anup.bgu.Noticeboard.repo.NoticeCacheRepo;
-import com.anup.bgu.event.entities.Event;
-import lombok.AllArgsConstructor;
+import com.anup.bgu.noticeboard.entities.Notice;
+import com.anup.bgu.noticeboard.repo.NoticeCacheRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;

@@ -1,10 +1,12 @@
 package com.anup.bgu.config;
 
-import com.anup.bgu.Noticeboard.repo.NoticeRepository;
+import com.anup.bgu.invitation.repo.InvitedEmailRepository;
+import com.anup.bgu.noticeboard.repo.NoticeRepository;
 import com.anup.bgu.admin.repo.UserRepository;
 import com.anup.bgu.event.repo.EventRepository;
 import com.anup.bgu.feedback.repo.FeedbackRepository;
 import com.anup.bgu.notification.repo.NotificationRepository;
+import com.anup.bgu.notification.repo.SubscribedTokenRepository;
 import com.anup.bgu.payments.repo.PaymentRepository;
 import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
@@ -26,7 +28,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
                 NotificationRepository.class,
                 FeedbackRepository.class,
                 NoticeRepository.class,
-                UserRepository.class
+                UserRepository.class,
+                InvitedEmailRepository.class,
+                SubscribedTokenRepository.class
         })
 )
 @EnableJpaAuditing

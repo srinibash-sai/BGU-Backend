@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket Consumption</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #333;
+    }
+
+    .ticket-container {
+        text-align: center;
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        margin: 10px;
+    }
+
+    .ticket-container h1 {
+        font-size: 36px;
+        color: #4CAF50;
+    }
+
+    .ticket-container p {
+        font-size: 18px;
+        color: #555;
+    }
+
+    .ticket-container input {
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 80%;
+        margin-top: 20px;
+    }
+
+    .ticket-container button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-size: 16px;
+    }
+
+    .ticket-container button:hover {
+        background-color: #45a049;
+    }
+
+    /* Responsive Styling */
+    @media (max-width: 768px) {
+        .ticket-container {
+            padding: 20px;
+            max-width: 90%;
+        }
+        .ticket-container h1 {
+            font-size: 30px;
+        }
+        .ticket-container p {
+            font-size: 16px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ticket-container {
+            padding: 15px;
+            max-width: 90%;
+        }
+        .ticket-container h1 {
+            font-size: 24px;
+        }
+        .ticket-container p {
+            font-size: 14px;
+        }
+    }
+  </style>
+</head>
+<body>
+<div class="ticket-container">
+  <h1>Ticket Consumption</h1>
+  <p>Please enter your ticket code to consume the ticket:</p>
+  <input type="text" id="ticketCode" placeholder="Enter ticket code" />
+  <br />
+  <button onclick="consumeTicket()">Consume Ticket</button>
+</div>
+<script>
+  function consumeTicket() {
+      const ticketCode = document.getElementById('ticketCode').value;
+      const ticketId = window.location.pathname.split('/').pop();
+
+      if (ticketCode.trim() === "") {
+          alert("Please enter a valid ticket code.");
+      } else {
+          const baseUrl = window.location.origin;
+
+          fetch(`${baseUrl}/invitation/ticket/${ticketId}?code=${ticketCode}`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+          })
+          .then(response => {
+              if (response.ok) {
+                  alert("Ticket consumed successfully!");
+              } else {
+                  alert("Failed to consume the ticket. Please try again.");
+              }
+          })
+          .catch(error => {
+              console.error('Error:', error);
+              alert("An error occurred while consuming the ticket.");
+          });
+      }
+  }
+</script>
+
+</body>
+</html>

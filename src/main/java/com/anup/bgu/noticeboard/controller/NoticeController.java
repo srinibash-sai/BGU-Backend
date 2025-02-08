@@ -1,8 +1,8 @@
-package com.anup.bgu.Noticeboard.controller;
+package com.anup.bgu.noticeboard.controller;
 
-import com.anup.bgu.Noticeboard.dto.NoticeRequest;
-import com.anup.bgu.Noticeboard.dto.NoticeResponse;
-import com.anup.bgu.Noticeboard.service.NoticeService;
+import com.anup.bgu.noticeboard.dto.NoticeRequest;
+import com.anup.bgu.noticeboard.dto.NoticeResponse;
+import com.anup.bgu.noticeboard.service.NoticeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;

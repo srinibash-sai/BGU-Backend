@@ -30,8 +30,7 @@ secret:
   captcha-secret: ${CAPTCHA_SECRET:Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b}
   captcha-expiry: 300
   api-base-url: ${API_BASE_URL:http://localhost:8080}
-  admin-user: ${ADMIN_USER:admin@spectosbgu.in}
-  admin-password: ${ADMIN_PASSWORD:password}
+  ticket-code: ${TICKET_CODE:kk}
   bgu-mail-domain: ${BGU_MAIL_DOMAIN:bgu.ac.in}
 
 email-id:

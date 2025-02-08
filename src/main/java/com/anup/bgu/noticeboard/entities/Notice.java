@@ -1,12 +1,10 @@
-package com.anup.bgu.Noticeboard.entities;
+package com.anup.bgu.noticeboard.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @ToString
