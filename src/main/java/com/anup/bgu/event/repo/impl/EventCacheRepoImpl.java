@@ -1,10 +1,9 @@
 package com.anup.bgu.event.repo.impl;
 
 import com.anup.bgu.event.entities.Event;
-import com.anup.bgu.event.entities.EventType;
-import com.anup.bgu.event.entities.Status;
 import com.anup.bgu.event.repo.EventCacheRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -16,17 +15,20 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class EventCacheRepoImpl implements EventCacheRepo {
 
     private final RedisTemplate<String, Object> redisTemplate;
     private final String HASH_KEY = "EVENT_CACHE";
-    private final Duration timeToLive = Duration.ofMinutes(3);
+    private final Duration timeToLive = Duration.ofMinutes(20);
 
     @Override
     public Event save(Event event) {
-        redisTemplate.opsForHash().put(HASH_KEY, event.getId(), event);
-        redisTemplate.expire(HASH_KEY, timeToLive);
-
+        if(redisTemplate.hasKey(HASH_KEY)){
+            redisTemplate.opsForHash().put(HASH_KEY, event.getId(), event);
+            redisTemplate.expire(HASH_KEY, timeToLive);
+            log.info("save()-> Event Saved in Cache! {}", event.getId());
+        }
         return event;
     }
 

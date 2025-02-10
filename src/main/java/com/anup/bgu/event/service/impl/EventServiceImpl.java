@@ -19,6 +19,7 @@ import com.anup.bgu.registration.repo.SoloRegistrationRepository;
 import com.anup.bgu.registration.repo.TeamRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -69,7 +70,6 @@ public class EventServiceImpl implements EventService {
         event = eventRepository.save(event);
         log.info("createEvent()-> New event Created in db! {}", event);
         eventCacheRepo.save(event);
-        log.info("createEvent()-> Event Saved in cache! {}", event.getId());
 
         //send notification
         NotificationRequest notificationRequest = new NotificationRequest(
@@ -154,10 +154,9 @@ public class EventServiceImpl implements EventService {
         if (request.eventType() != null) {
             event.setEventType(EventType.valueOf(request.eventType()));
         }
-        log.info("updateEvent()-> event updated! {}", event);
+        log.info("updateEvent()-> event updated in db! {}", event);
         event = eventRepository.save(event);
         eventCacheRepo.save(event);
-        log.info("updateEvent()-> Event Saved! {}", event.getId());
         return event;
     }
 
@@ -228,6 +227,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "eventPictures", key = "#id")
     public String updateEventImage(String id, MultipartFile file) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new EventNotFoundException("Event id: " + id + "does not exist!"));
@@ -242,21 +242,20 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public synchronized void increaseRegistrationCount(String id) {
-        eventRepository.findById(id).ifPresent(event -> {
-            event.setCurrentRegistration(event.getCurrentRegistration() + 1);
-            if(event.getCurrentRegistration()>=event.getMaxRegistration()){
-                event.setStatus(Status.CLOSED);
-                //send notification
-                NotificationRequest notificationRequest = new NotificationRequest(
-                        "❌ Event Closed: " + event.getTitle() + " - Stay Tuned! 📅",
-                        "🚫 The event '" + event.getTitle() + "' is now closed for registration.\n" +
-                                "🎯 Don't worry, more exciting events are coming soon!\n" +
-                                "📆 Stay updated and be ready for the next one! 💪"
-                );
-                redisTemplate.convertAndSend("notification", notificationRequest);
-            }
-            eventRepository.save(event);
-            eventCacheRepo.save(event);
-        });
+        Event event = getEventById(id);
+        event.setCurrentRegistration(event.getCurrentRegistration() + 1);
+
+        if (event.getCurrentRegistration() >= event.getMaxRegistration()) {
+            event.setStatus(Status.CLOSED);
+            NotificationRequest notificationRequest = new NotificationRequest(
+                    "❌ Event Closed: " + event.getTitle() + " - Stay Tuned! 📅",
+                    "🚫 The event '" + event.getTitle() + "' is now closed for registration.\n" +
+                            "🎯 Don't worry, more exciting events are coming soon!\n" +
+                            "📆 Stay updated and be ready for the next one! 💪"
+            );
+            redisTemplate.convertAndSend("notification", notificationRequest);
+        }
+        eventRepository.save(event);
+        eventCacheRepo.save(event);
     }
 }
