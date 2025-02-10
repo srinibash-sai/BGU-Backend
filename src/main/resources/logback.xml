@@ -3,15 +3,14 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Kolkata} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
     <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="ch.qos.logback.classic.html.HTMLLayout">
-                <timeZone>Asia/Kolkata</timeZone>
-                <pattern>%d{HH:mm:ss.SSS}%thread%5level%logger{36}%message</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Kolkata}%thread%5level%logger{36}%message</pattern>
             </layout>
         </encoder>
         <file>./logs/app/BGU.html</file>
@@ -32,8 +31,7 @@
     <appender name="SERVER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="ch.qos.logback.classic.html.HTMLLayout">
-                <timeZone>Asia/Kolkata</timeZone>
-                <pattern>%d{HH:mm:ss}%thread%5level%logger{36}%message</pattern>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Kolkata}%thread%5level%logger{36}%message</pattern>
             </layout>
         </encoder>
         <file>./logs/server/tomcat.html</file>
