@@ -86,8 +86,8 @@ public class PaymentServiceImpl implements PaymentService {
             variables.put("eventTitle", soloRegistration.getEvent().getTitle());
             variables.put("registrationId", registrationId);
             variables.put("eventDateTime", soloRegistration.getEvent().getDateTime());
-            variables.put("coordinatorName", soloRegistration.getEvent().getCoordinatorName());
-            variables.put("coordinatorNumber", soloRegistration.getEvent().getCoordinatorNumber());
+            variables.put("pocName", soloRegistration.getEvent().getCoordinatorName());
+            variables.put("pocNumber", soloRegistration.getEvent().getCoordinatorNumber());
 
             MailData mailData = new MailData(
                     soloRegistration.getEmail(),
@@ -141,9 +141,10 @@ public class PaymentServiceImpl implements PaymentService {
             variables.put("eventTitle", teamRegistration.getEvent().getTitle());
             variables.put("registrationId", registrationId);
             variables.put("eventDateTime", teamRegistration.getEvent().getDateTime());
-            variables.put("coordinatorName", teamRegistration.getEvent().getCoordinatorName());
-            variables.put("coordinatorNumber", teamRegistration.getEvent().getCoordinatorNumber());
+            variables.put("pocName", teamRegistration.getEvent().getCoordinatorName());
+            variables.put("pocNumber", teamRegistration.getEvent().getCoordinatorNumber());
             variables.put("teamMembers", teamMembers);
+            variables.put("teamLeader", teamRegistration.getLeaderName());
 
             String subject = "Team " + teamRegistration.getTeamName() + " - Registration Confirmation for " + teamRegistration.getEvent().getTitle();
 
