@@ -37,7 +37,7 @@ public record EventUpdateRequest(
         @Min(value = 2, message = "Minimum Team size should be 2")
         Integer maxTeamSize,
 
-        @Min(value = 2, message = "Minimum Team size should be 2")
+        @Min(value = 1, message = "Minimum Team size should be 1")
         Integer minTeamSize,
 
         @Min(value = 0, message = "maxRegistration should not be less than zero")
