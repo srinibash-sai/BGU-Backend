@@ -23,7 +23,7 @@ spring:
 
 secret:
   key: vR4cTn8gWpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1bFj7YtAqE3rPzLwWbJkKr5iShzO2vTg9Q4pFz0KmXtN6V7eYd
-  cors: http://localhost:4173
+  cors: http://127.0.0.1:5500
   captcha-secret: Tn8gWLocalConEnyMerFtoryBanpL3dQ9fGz6S2hDkZxJm5uXqV0yP8sNw1b
   captcha-expiry: 300
   api-base-url: http://localhost:8080

@@ -97,7 +97,7 @@ public class ExcelServiceImpl implements ExcelService {
 
         // Create header row for registration data
         Row headerRow = sheet.createRow(0);
-        String[] headers = {"ID", "Name", "Leader Name", "Team Name", "Email", "Phone", "Student Type", "Gender", "Registration Date", "College Name", "Transaction ID", "Screenshot"};
+        String[] headers = {"ID", "Leader Name", "Team Name", "Email", "Phone", "Student Type", "Gender", "Registration Date", "College Name", "Transaction ID", "Screenshot"};
 
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
@@ -111,21 +111,20 @@ public class ExcelServiceImpl implements ExcelService {
             // Add a new row for registration data
             Row dataRow = sheet.createRow(currentRow);
             dataRow.createCell(0).setCellValue(registrationResponse.getId());
-            dataRow.createCell(1).setCellValue(registrationResponse.getName());
-            dataRow.createCell(2).setCellValue(registrationResponse.getLeaderName());
-            dataRow.createCell(3).setCellValue(registrationResponse.getTeamName());
-            dataRow.createCell(4).setCellValue(registrationResponse.getEmail());
-            dataRow.createCell(5).setCellValue(registrationResponse.getPhone());
-            dataRow.createCell(6).setCellValue(registrationResponse.getStudentType());
-            dataRow.createCell(7).setCellValue(registrationResponse.getGender());
-            dataRow.createCell(8).setCellValue(registrationResponse.getRegistrationDate());
-            dataRow.createCell(9).setCellValue(registrationResponse.getCollegeName());
-            dataRow.createCell(11).setCellValue(registrationResponse.getScreenshot());
+            dataRow.createCell(1).setCellValue(registrationResponse.getLeaderName());
+            dataRow.createCell(2).setCellValue(registrationResponse.getTeamName());
+            dataRow.createCell(3).setCellValue(registrationResponse.getEmail());
+            dataRow.createCell(4).setCellValue(registrationResponse.getPhone());
+            dataRow.createCell(5).setCellValue(registrationResponse.getStudentType());
+            dataRow.createCell(6).setCellValue(registrationResponse.getGender());
+            dataRow.createCell(7).setCellValue(registrationResponse.getRegistrationDate());
+            dataRow.createCell(8).setCellValue(registrationResponse.getCollegeName());
+            dataRow.createCell(10).setCellValue(registrationResponse.getScreenshot());
 
             if (registrationResponse.getTransactionId() != null)
-                dataRow.createCell(10).setCellValue(registrationResponse.getTransactionId());
+                dataRow.createCell(9).setCellValue(registrationResponse.getTransactionId());
             else
-                dataRow.createCell(10).setCellValue("N/A");
+                dataRow.createCell(9).setCellValue("N/A");
 
             // Adjust column widths for registration details
             for (int i = 0; i < headers.length; i++) {

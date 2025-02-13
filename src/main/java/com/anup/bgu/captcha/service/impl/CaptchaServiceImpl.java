@@ -41,9 +41,11 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void validateCaptcha(String userAnswer, String hash) {
         if (captchaCacheRepo.isMemberOfSet(hash)) {
+            log.debug("validateCaptcha()-> Captcha already used!! Hash: {} UserAnswer: {}", hash, userAnswer);
             throw new CaptchaException("Captcha already used! Please generate another.");
         }
         if (userAnswer == null || hash == null) {
+            log.debug("validateCaptcha()-> Bot detected! You are not a human.! Hash: {} UserAnswer: {}", hash, userAnswer);
             throw new CaptchaException("Bot detected! You are not a human.");
         }
 
@@ -66,14 +68,17 @@ public class CaptchaServiceImpl implements CaptchaService {
 
         // Check if the CAPTCHA has expired (expiration time is stored in seconds)
         if (Instant.now().getEpochSecond() > expirationTimestamp) {
+            log.debug("validateCaptcha()-> CAPTCHA expired! Hash: {} UserAnswer: {}", decoded, userAnswer);
             throw new CaptchaException("CAPTCHA expired!");// CAPTCHA expired
         }
 
         String hashedUserAnswer = hashString(userAnswer);
         // Compare hashed input with the stored hash
         if (!hashedAnswerFromCookie.equals(hashedUserAnswer)) {
+            log.debug("validateCaptcha()-> Captcha not matched!! Hash: {} UserAnswer: {}", decoded, userAnswer);
             throw new CaptchaException("Captcha not matched!");
         }
+        log.debug("validateCaptcha()-> CAPTCHA Verified! Hash: {} UserAnswer: {}", decoded, userAnswer);
         captchaCacheRepo.addValueToSet(hash);
     }
 

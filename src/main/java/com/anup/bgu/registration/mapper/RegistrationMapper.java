@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ public class RegistrationMapper {
 
     private String formatDateTime(Instant instant) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneOffset.systemDefault());
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Kolkata"));
         return localDateTime.format(formatter);
     }
 
